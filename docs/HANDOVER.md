@@ -151,7 +151,7 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 - Trả lời bằng tiếng Việt, ngắn gọn, đưa kết luận quan trọng xuống cuối.
 - Không thêm dòng attribution (Co-Authored-By) vào commit hay PR. Đây là yêu cầu hiện tại của người dùng.
 - Không commit hay push khi chưa được yêu cầu. Remote public: `https://github.com/AtelierMizumi/azurlane-daily-tools` (tạo 2026-10-30, CI `ci.yml` chạy trên push — đã xanh).
-- Không sửa code upstream ALAS trong `AzurLaneAutoScript/` (spec mục 8). Ngoại lệ duy nhất: `--apply` ghi file config runtime, có `.bak`.
+- **Fork ALAS (chốt 2026-10-30, người dùng gỡ ràng buộc "không sửa ALAS")**: fork tại `https://github.com/AtelierMizumi/AzurLaneAutoScript`, branch patch `azdaily` (remote `fork` trong `AzurLaneAutoScript/.git`, `origin` vẫn là upstream để rebase). `config/deploy.yaml` mục `Git` trỏ vào fork/azdaily → nút Update trong GUI cập nhật từ fork. Patch #1 `791c4944`: option `Commission > Check After Sorties` — sau task sortie, Commission được re-scan ngay (bắt gem spawn sau ải). Ràng buộc mới: **không push lên upstream LmeSzinc**; giữ patch nhỏ, tái base lên upstream master khi cần.
 - Test-first khi có test suite. Không sửa test để khớp code sai.
 - Không dùng `rm -rf` trên đường dẫn chưa kiểm tra.
 - Với nhiều file tài liệu, hook `block-doc-commit.sh` chặn các lệnh git có chuỗi đuôi tài liệu (`.docx`, `.pdf`, ...) trong cùng dòng lệnh, kể cả khi chỉ là pattern tìm kiếm. Tách lệnh.

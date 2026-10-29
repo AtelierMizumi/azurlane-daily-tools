@@ -69,7 +69,7 @@ cd sidecar && uv run watchdog.py
 
 ## Quy ước quan trọng
 
-- Không sửa code upstream ALAS trong `AzurLaneAutoScript/` — mọi thứ của ta nằm ở `sidecar/` (trừ `config/deploy.yaml` và `docker-compose.override.yml` vốn là user config/gitignored).
+- **ALAS chạy từ fork của dự án**: [`AtelierMizumi/AzurLaneAutoScript`](https://github.com/AtelierMizumi/AzurLaneAutoScript), branch `azdaily` (remote `fork` trong `AzurLaneAutoScript/.git`; `origin` giữ là upstream để rebase). Các patch của ta nằm trên branch này — option đầu tiên: `Commission > Check After Sorties` (re-scan commission ngay sau khi đi ải để bắt commission gem). `config/deploy.yaml` mục `Git` trỏ vào fork nên nút Update trong GUI cập nhật từ fork, không phải upstream. Không push lên upstream LmeSzinc.
 - ALAS yêu cầu đúng **Android display 1280x720**, không phải cửa sổ desktop. `persist.waydroid.width/height` đã ghim display — resize cửa sổ Waydroid thoải mái (nội dung chỉ scale), miễn là `docker exec alas adb -s 192.0.2.10:5555 shell wm size` vẫn trả 1280x720.
 - **FROZEN pitfall**: đóng cửa sổ Waydroid → container `FROZEN` (LXC freezer) → adb treo vô hạn, không lỗi không timeout. Hồi phục user-level (không cần root): `waydroid app launch com.YoStarEN.AzurLane` (tự unfreeze qua DBus). `waydroid container unfreeze` cần root.
 - Sau freeze/thaw, kết nối adb cũ chết ngầm — phải `adb disconnect` + `connect` lại. Watchdog sidecar phụ trách cả hai (keep-alive + reconnect).

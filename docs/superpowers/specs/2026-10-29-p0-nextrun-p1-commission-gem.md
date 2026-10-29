@@ -23,6 +23,22 @@ Kiến trúc chốt: **C (lai)** — sidecar + config ALAS là chính. Ràng bu�
 - **`guoh064/AzurLaneAutoScript`** (fork cộng đồng sống nhất, 37 sao, desc "từ bỏ hy vọng vào lme"): commit 2026-10-27 tập trung vào **island transport/collect, shop info-bar, minigame, supply pack** — **không module nào trùng với đường chạy daily của ta**; đồng thời nó merge upstream liên tục, chứng tỏ thượng nguồn vẫn sống.
 - Kết luận: **không có bằng chứng nào cho thấy phần ALAS ta dùng bị outdated**. Rủi ro thật của ta là template drift khi game đổi UI (đã có watchdog + ntfy + abort-safe), không phải abandonware. Giữ chạy ALAS stock; đánh giá lại chỉ khi upstream thực sự ngừng nhận bug_fix.
 
+### 1c. Bước ngoặt 2026-10-30: chuyển sang fork ALAS (ghi đè phần mềm lượng phương án trên)
+
+Người dùng quyết định (sau khi thấy GUI gốc của ALAS): **fork ALAS, patch theo ý riêng, lưu trên GitHub** —
+`https://github.com/AtelierMizumi/AzurLaneAutoScript`, branch `azdaily`. Hệ quả:
+
+- Trigger P1 (check commission sau sortie) chuyển vào **trong ALAS**: patch `791c4944` thêm option
+  `Commission > Check After Sorties` — hook ở `alas.py` `loop()` sau khi task sortie kết thúc, `cross_set`
+  `Commission.Scheduler.NextRun = now`. Mặc định tắt. **Thiết kế interlude (mục 3.2.2) bị thay thế** — không
+  còn docker stop/start xen giữa; mọi thứ nằm trong scheduler của ALAS, hiện native trong GUI người dùng thích.
+- Hành động **hủy** commission vẫn cần template UI (mục 4 capture explore) — sau này cắm thẳng vào
+  `_commission_choose` của fork thay vì sidecar.
+- Sidecar dashboard bị **hạ cấp thành tùy chọn** (người dùng thích GUI ALAS); các patch tiếp theo ưu tiên
+  dạng native ALAS (argument.yaml + module logic) để hiện trong GUI.
+- Quy tắc rebase: branch `azdaily` giữ patch nhỏ, tái base lên `origin/master` (upstream) định kỳ; nút
+  Update của ALAS trỏ vào fork qua `config/deploy.yaml` mục `Git`.
+
 ## 2. Phần A — P0: NextRun fail-fast
 
 Mục tiêu: `--check` phát hiện sớm lượt chạy vô vọng thay vì WARNING rồi để e2e chạy 60 phút không kết quả.
