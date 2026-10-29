@@ -15,7 +15,10 @@ END_RE = re.compile(r"Scheduler: End task `(\w+)`")
 # The datetime may wrap onto the next line, so this runs on the whole text.
 NEXT_RE = re.compile(
     r"Save config \S+, (\w+)\.Scheduler\.NextRun=datetime\.datetime\("
-    r"\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)\s*\)"
+    # repr() drops trailing zero fields (e.g. "(2026, 10, 30, 14, 0)"), so only
+    # year, month, day are required; hour/minute/second and microsecond are optional.
+    r"\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?(?:,\s*(\d+))?(?:,\s*(\d+))?"
+    r"(?:,\s*\d+)?\s*\)"
 )
 RESTARTING_RE = re.compile(r"Restarting (\S+) to fix it")
 ABORT_RE = re.compile(r"Aborted \(core dumped\)")
@@ -56,7 +59,7 @@ def build_report(text):
                 ends[name] = max(ts, ends.get(name, ts))
             if task is current:
                 current = None
-        elif "Commission detect" in line and current and current["name"] == "Commission":
+        elif "COMMISSION SCAN" in line and current and current["name"] == "Commission":
             current["commission_scan"] = True
         if RESTARTING_RE.search(line):
             counts["restarts"] += 1
@@ -70,7 +73,7 @@ def build_report(text):
     next_runs = {}
     for m in NEXT_RE.finditer(text):
         try:
-            next_runs[m.group(1)] = datetime(*(int(g) for g in m.groups()[1:]))
+            next_runs[m.group(1)] = datetime(*(int(g) for g in m.groups()[1:] if g is not None))
         except ValueError:
             continue
 

@@ -3,8 +3,12 @@
 Markers were verified by reading the ALAS source (read-only):
   - app start:          module/handler/login.py:159   logger.hr('App start')
   - login ok:           module/handler/login.py:61    logger.info('Login success')
-  - commission started: module/commission/commission.py:70
-                        logger.hr('Commission detect')
+  - commission scan:    module/commission/commission.py
+                        logger.hr('Commission scan', level=1)
+                        logger.hr uppercases the title, so the log shows
+                        "COMMISSION SCAN" (box line plus an INFO line). Matched
+                        case-sensitively. (The old "Commission detect" text is not
+                        in the real log.) Field name stays commission_started.
   - commission DONE:    alas.py:592
                         logger.info(f'Scheduler: End task `{task}`')
                         with task == 'Commission' (module/config/argument/task.yaml:200;
@@ -24,7 +28,7 @@ from typing import Iterable
 
 _APP_START = re.compile(r"App start")
 _LOGIN_OK = re.compile(r"Login success")
-_COMMISSION_STARTED = re.compile(r"Commission detect")
+_COMMISSION_STARTED = re.compile(r"COMMISSION SCAN")
 _COMMISSION_DONE = re.compile(r"Scheduler:\s*End task\s*`Commission`")
 _ERROR = re.compile(
     r"GameStuckError|GameNotRunningError|GameTooManyClickError|Traceback|\bCRITICAL\b"

@@ -6,7 +6,7 @@ from log_parser import parse_lines, newest_log_file
 HAPPY = [
     "═══ App start ═══",
     "Login success",
-    "═══ Commission detect ═══",
+    "═══ COMMISSION SCAN ═══",
     "Choose daily commission",
     "Scheduler: End task `Commission`",
 ]
@@ -32,6 +32,19 @@ class ParseLines(unittest.TestCase):
         s = parse_lines(HAPPY[:-1] + ["Scheduler: Start task `Commission`"])
         self.assertTrue(s.commission_started)
         self.assertFalse(s.commission_done)
+
+    def test_uppercase_commission_scan_sets_started(self):
+        # ALAS prints logger.hr('Commission scan') uppercased: "COMMISSION SCAN".
+        s = parse_lines(["2026-10-29 20:46:03.906 | INFO | COMMISSION SCAN"])
+        self.assertTrue(s.commission_started)
+
+    def test_old_commission_detect_text_is_not_a_scan(self):
+        s = parse_lines(["═══ Commission detect ═══", "Commission detect"])
+        self.assertFalse(s.commission_started)
+
+    def test_mixed_case_scan_text_is_not_a_scan(self):
+        s = parse_lines(["Commission scan"])
+        self.assertFalse(s.commission_started)
 
     def test_stuck_error_recorded(self):
         s = parse_lines(["GameStuckError: game stuck"])

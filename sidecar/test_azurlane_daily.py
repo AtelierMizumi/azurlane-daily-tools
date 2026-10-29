@@ -86,7 +86,7 @@ class Orchestrator(unittest.TestCase):
         log_dir = Path(d)
         # lines are written DURING the run (a new log file appears after start)
         sleep = AppendOnFirstSleep(clock, log_dir / "run.txt",
-                                   ["App start", "Login success", "Commission detect", DONE])
+                                   ["App start", "Login success", "COMMISSION SCAN", DONE])
         out = run_daily(make_cfg(), runner, lambda u: 200, clock, sleep,
                         alas_json(d, GOOD_ALAS), log_dir)
         self.assertEqual(out["result"], "success")
@@ -118,7 +118,7 @@ class Orchestrator(unittest.TestCase):
     def test_preexisting_done_line_ignored(self):
         d = tempfile.mkdtemp()
         log_dir = Path(d)
-        (log_dir / "run.txt").write_text(f"App start\nLogin success\nCommission detect\n{DONE}\n")
+        (log_dir / "run.txt").write_text(f"App start\nLogin success\nCOMMISSION SCAN\n{DONE}\n")
         runner = FakeRunner(STOPPED)
         clock = Clock()
         out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
@@ -135,7 +135,7 @@ class Orchestrator(unittest.TestCase):
         runner = FakeRunner(STOPPED)
         clock = Clock()
         sleep = AppendOnFirstSleep(clock, log_file,
-                                   ["Commission detect", "Traceback (most recent call last):", DONE])
+                                   ["COMMISSION SCAN", "Traceback (most recent call last):", DONE])
         out = run_daily(make_cfg(), runner, lambda u: 200, clock, sleep,
                         alas_json(d, GOOD_ALAS), log_dir)
         self.assertNotEqual(out["result"], "success")
@@ -494,7 +494,7 @@ def calls_of(runner, prefix):
 class ResolutionAfterStart(unittest.TestCase):  # Ruling 31 (C1)
     def test_no_docker_exec_before_docker_start(self):
         r = FakeRunner(STOPPED)
-        out = go(make_world(), r, lines=["Commission detect", DONE])
+        out = go(make_world(), r, lines=["COMMISSION SCAN", DONE])
         start, execs = calls_of(r, ["docker", "start"]), calls_of(r, ["docker", "exec"])
         self.assertEqual(len(start), 1)
         self.assertTrue(execs)
@@ -744,13 +744,13 @@ class E2eStages(unittest.TestCase):  # Ruling 35
 
     def test_success_lists_canonical_stages_in_order_all_pass(self):
         out = go(make_world(), FakeRunner(STOPPED),
-                 lines=["App start", "Login success", "Commission detect", DONE])
+                 lines=["App start", "Login success", "COMMISSION SCAN", DONE])
         canon = self._canon(out)
         self.assertEqual([s[0] for s in canon], CANONICAL)
         self.assertTrue(all(s[1] for s in canon), canon)
 
     def test_stages_not_reached_are_fail_not_reached(self):
-        out = go(make_world(), FakeRunner(STOPPED), lines=["App start", "Commission detect"])
+        out = go(make_world(), FakeRunner(STOPPED), lines=["App start", "COMMISSION SCAN"])
         canon = {s[0]: s for s in self._canon(out)}
         self.assertEqual([s[0] for s in self._canon(out)], CANONICAL)
         self.assertTrue(canon["app started"][1])
@@ -785,7 +785,7 @@ class E2eStages(unittest.TestCase):  # Ruling 35
 
     def test_old_log_lines_do_not_set_run_state_stages(self):  # Ruling 11 still holds
         w = make_world()
-        (w / "log" / "run.txt").write_text(f"App start\nLogin success\nCommission detect\n{DONE}\n")
+        (w / "log" / "run.txt").write_text(f"App start\nLogin success\nCOMMISSION SCAN\n{DONE}\n")
         out = go(w, FakeRunner(STOPPED))
         canon = {s[0]: s for s in self._canon(out)}
         for name in ("app started", "login ok", "commission started", "commission done"):
@@ -825,13 +825,13 @@ class NoCommissionIsNotSuccess(unittest.TestCase):  # Ruling 46
         self.assertEqual(out["result"], "alas_error")
 
     def test_detect_plus_end_without_errors_is_success(self):
-        out = go(make_world(), FakeRunner(STOPPED), lines=["Commission detect", DONE])
+        out = go(make_world(), FakeRunner(STOPPED), lines=["COMMISSION SCAN", DONE])
         self.assertEqual(out["result"], "success")
         stage = [s for s in out["stages"] if s[0] == "commission"][0]
         self.assertTrue(stage[1])
 
     def test_detect_without_end_is_still_timeout(self):
-        out = go(make_world(), FakeRunner(STOPPED), lines=["Commission detect"])
+        out = go(make_world(), FakeRunner(STOPPED), lines=["COMMISSION SCAN"])
         self.assertEqual(out["result"], "timeout")
 
 
@@ -849,7 +849,7 @@ class Summary(unittest.TestCase):  # Ruling 34
     def test_summary_json_written_with_required_fields(self):
         runs = Path(tempfile.mkdtemp())
         out = go(make_world(), FakeRunner(STOPPED), runs=runs,
-                 lines=["App start", "Login success", "Commission detect", DONE])
+                 lines=["App start", "Login success", "COMMISSION SCAN", DONE])
         data = self._summary(runs)
         self.assertEqual(data["result"], "success")
         self.assertEqual(data["serial"], "192.168.240.112:5555")

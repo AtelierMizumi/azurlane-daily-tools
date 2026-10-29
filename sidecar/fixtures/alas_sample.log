@@ -1,60 +1,451 @@
-7:2026-10-29 20:41:55.798 | INFO | Pending tasks: ['Restart', 'Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer',
-22:2026-10-29 20:41:57.854 | INFO | Save config ./config/alas.json, Alas.Emulator.Serial='192.168.240.112:5555'           
-32:2026-10-29 20:41:58.729 | INFO | Save config ./config/alas.json, Alas.Emulator.PackageName='com.YoStarEN.AzurLane'     
-99:2026-10-29 20:42:10.772 | ERROR | ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed       
-144:2026-10-29 20:42:14.328 | INFO | Save config ./config/alas.json, Alas.Emulator.ScreenshotMethod='DroidCast_raw'        
-147:2026-10-29 20:42:14.379 | INFO | Delay task `Restart` to 2026-10-30 14:00:00 (server_update='00:00')                   
-149:2026-10-29 20:42:14.420 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
-154:2026-10-29 20:42:14.512 | INFO | Pending tasks: ['Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild',  
-158:2026-10-29 20:42:14.570 | INFO | Scheduler: Start task `Commission`                                                    
-167:2026-10-29 20:42:18.545 | INFO | Aborted (core dumped)                                                                 
-171:2026-10-29 20:42:19.562 | ERROR | MaaTouchNotInstalledError: Received empty data from MaaTouch, probably because       
-179:2026-10-29 20:42:19.949 | WARNING | Game not running                                                                   
-180:2026-10-29 20:42:19.955 | INFO | Task call: Restart                                                                    
-182:2026-10-29 20:42:19.979 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
-184:2026-10-29 20:42:19.997 | INFO | Scheduler: End task `Commission`                                                      
-188:2026-10-29 20:42:20.034 | INFO | Pending tasks: ['Restart', 'Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer',
-195:2026-10-29 20:42:20.100 | INFO | Scheduler: Start task `Restart`                                                       
-236:2026-10-29 20:44:59.301 | INFO | Delay task `Restart` to 2026-10-30 14:00:00 (server_update='00:00')                   
-238:2026-10-29 20:44:59.341 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
-240:2026-10-29 20:44:59.364 | INFO | Scheduler: End task `Restart`                                                         
-243:2026-10-29 20:44:59.405 | INFO | Pending tasks: ['Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild',  
-247:2026-10-29 20:44:59.446 | INFO | Scheduler: Start task `Commission`                                                    
-559:2026-10-29 20:46:40.113 | INFO | Delay task `Commission` to 2026-10-29 21:46:38 (target=datetime.datetime(2026, 10, 29,
-562:2026-10-29 20:46:40.169 | INFO | Save config ./config/alas.json, Commission.Scheduler.NextRun=datetime.datetime(2026,  
-565:2026-10-29 20:46:40.214 | INFO | Scheduler: End task `Commission`                                                      
-568:2026-10-29 20:46:40.289 | INFO | Pending tasks: ['Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild', 'Reward',      
-572:2026-10-29 20:46:40.369 | INFO | Scheduler: Start task `Tactical`                                                      
-702:2026-10-29 20:47:08.361 | INFO | Delay task `Tactical` to 2026-10-30 04:47:06 (target=datetime.datetime(2026, 10, 30,  
-705:2026-10-29 20:47:08.405 | INFO | Save config ./config/alas.json, Tactical.Scheduler.NextRun=datetime.datetime(2026, 10,
-707:2026-10-29 20:47:08.431 | INFO | Scheduler: End task `Tactical`                                                        
-710:2026-10-29 20:47:08.498 | INFO | Pending tasks: ['Research', 'Dorm', 'Meowfficer', 'Guild', 'Reward', 'Freebies']      
-713:2026-10-29 20:47:08.569 | INFO | Scheduler: Start task `Research`                                                      
-953:2026-10-29 20:48:11.236 | INFO | Delay task `Research` to 2026-10-29 23:17:37 (target=datetime.datetime(2026, 10, 29,  
-956:2026-10-29 20:48:11.273 | INFO | Save config ./config/alas.json, Research.Scheduler.NextRun=datetime.datetime(2026, 10,
-958:2026-10-29 20:48:11.302 | INFO | Scheduler: End task `Research`                                                        
-961:2026-10-29 20:48:11.372 | INFO | Pending tasks: ['Dorm', 'Meowfficer', 'Guild', 'Reward', 'Freebies']                  
-964:2026-10-29 20:48:11.426 | INFO | Scheduler: Start task `Dorm`                                                          
-1014:2026-10-29 20:48:41.173 | INFO | Delay task `Dorm` to 2026-10-30 02:01:41 (minute=313)                                 
-1016:2026-10-29 20:48:41.266 | INFO | Save config ./config/alas.json, Dorm.Scheduler.NextRun=datetime.datetime(2026, 10, 30,
-1018:2026-10-29 20:48:41.302 | INFO | Scheduler: End task `Dorm`                                                            
-1021:2026-10-29 20:48:41.389 | INFO | Pending tasks: ['Meowfficer', 'Guild', 'Reward', 'Freebies']                          
-1024:2026-10-29 20:48:41.467 | INFO | Scheduler: Start task `Meowfficer`                                                    
-1089:2026-10-29 20:49:30.837 | INFO | Delay task `Meowfficer` to 2026-10-30 14:00:00 (server_update='00:00')                
-1091:2026-10-29 20:49:30.902 | INFO | Save config ./config/alas.json, Meowfficer.Scheduler.NextRun=datetime.datetime(2026,  
-1093:2026-10-29 20:49:30.937 | INFO | Scheduler: End task `Meowfficer`                                                      
-1096:2026-10-29 20:49:31.024 | INFO | Pending tasks: ['Guild', 'Reward', 'Freebies']                                        
-1099:2026-10-29 20:49:31.110 | INFO | Scheduler: Start task `Guild`                                                         
-1177:2026-10-29 20:50:07.437 | WARNING | Restarting com.YoStarEN.AzurLane to fix it                                         
-1178:2026-10-29 20:50:07.453 | INFO | Task call: Restart                                                                    
-1180:2026-10-29 20:50:07.517 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
-1182:2026-10-29 20:50:17.571 | INFO | Scheduler: End task `Guild`                                                           
-1185:2026-10-29 20:50:17.695 | INFO | Pending tasks: ['Restart', 'Guild', 'Reward', 'Freebies']                             
-1188:2026-10-29 20:50:17.777 | INFO | Scheduler: Start task `Restart`                                                       
-1232:2026-10-29 20:53:19.299 | INFO | Delay task `Restart` to 2026-10-30 14:00:00 (server_update='00:00')                   
-1234:2026-10-29 20:53:19.354 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
-1236:2026-10-29 20:53:19.385 | INFO | Scheduler: End task `Restart`                                                         
-1239:2026-10-29 20:53:19.450 | INFO | Pending tasks: ['Guild', 'Reward', 'Freebies']                                        
-1242:2026-10-29 20:53:19.522 | INFO | Scheduler: Start task `Guild`                                                         
-1363:2026-10-29 20:55:13.715 | INFO | Delay task `Guild` to 2026-10-30 02:00:00 (server_update='00:00, 06:00, 12:00, 18:00, 
-1366:2026-10-29 20:55:13.773 | INFO | Save config ./config/alas.json, Guild.Scheduler.NextRun=datetime.datetime(2026, 10,   
+30, 14, 0)                                                                                                             
+2026-10-29 20:42:14.442 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:14.452 | INFO | [Server] en                                                                           
+2026-10-29 20:42:14.497 | INFO | Bind task ['General', 'Alas']                                                         
+2026-10-29 20:42:14.512 | INFO | Pending tasks: ['Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild',  
+'Reward', 'Freebies']                                                                                                  
+2026-10-29 20:42:14.523 | INFO | [Task] Commission (Enable, 2020-01-01 00:00:00)                                       
+2026-10-29 20:42:14.532 | INFO | Bind task ['General', 'Alas', 'Commission']                                           
+2026-10-29 20:42:14.570 | INFO | Scheduler: Start task `Commission`                                                    
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                                      COMMISSION                                                       
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+2026-10-29 20:42:14.662 | INFO | [Screen_size] 1280x720                                                                
+2026-10-29 20:42:14.667 | INFO | early_ocr_import start                                                                
+2026-10-29 20:42:14.710 | INFO | Loading OCR dependencies                                                              
+2026-10-29 20:42:16.455 | INFO | <<< UI ENSURE >>>                                                                     
+2026-10-29 20:42:16.469 | INFO | UI get current page                                                                   
+2026-10-29 20:42:18.545 | INFO | Aborted (core dumped)                                                                 
+2026-10-29 20:42:18.588 | INFO | early_ocr_import finish                                                               
+2026-10-29 20:42:18.808 | INFO | Unknown ui page                                                                       
+2026-10-29 20:42:19.553 | INFO |                                                                                       
+2026-10-29 20:42:19.562 | ERROR | MaaTouchNotInstalledError: Received empty data from MaaTouch, probably because       
+MaaTouch is not installed                                                                                              
+2026-10-29 20:42:19.573 | INFO | <<< MAATOUCH INSTALL >>>                                                              
+2026-10-29 20:42:19.582 | INFO | Execute: ['/usr/bin/adb', '-s', '192.168.240.112:5555', 'push',                       
+'./bin/MaaTouch/maatouchsync', '/data/local/tmp/maatouchsync']                                                         
+2026-10-29 20:42:19.635 | INFO | <<< MAATOUCH INIT >>>                                                                 
+2026-10-29 20:42:19.697 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:19.942 | INFO | [Package_name] com.android.launcher3                                                  
+2026-10-29 20:42:19.949 | WARNING | Game not running                                                                   
+2026-10-29 20:42:19.955 | INFO | Task call: Restart                                                                    
+2026-10-29 20:42:19.974 | INFO | Bind task ['General', 'Alas', 'Commission']                                           
+2026-10-29 20:42:19.979 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
+29, 20, 42, 19), Restart.Scheduler.Enable=True                                                                         
+2026-10-29 20:42:19.997 | INFO | Scheduler: End task `Commission`                                                      
+2026-10-29 20:42:20.002 | INFO | [Server] en                                                                           
+2026-10-29 20:42:20.022 | INFO | Bind task ['General', 'Alas']                                                         
+2026-10-29 20:42:20.025 | INFO | ^ 10 1280 720 255                                                                     
+2026-10-29 20:42:20.034 | INFO | Pending tasks: ['Restart', 'Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer',
+'Guild', 'Reward', 'Freebies']                                                                                         
+2026-10-29 20:42:20.041 | INFO | $ 255                                                                                 
+2026-10-29 20:42:20.047 | INFO | [Task] Restart (Enable, 2026-10-29 20:42:19)                                          
+2026-10-29 20:42:20.053 | INFO | MaaTouch stream connected                                                             
+2026-10-29 20:42:20.059 | INFO | Bind task ['General', 'Alas', 'Restart']                                              
+2026-10-29 20:42:20.064 | INFO | max_contact: 10; max_x: 1280; max_y: 720; max_pressure: 255                           
+2026-10-29 20:42:20.100 | INFO | Scheduler: Start task `Restart`                                                       
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                                        RESTART                                                        
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+2026-10-29 20:42:20.186 | INFO | <<< APP RESTART >>>                                                                   
+2026-10-29 20:42:20.195 | INFO | App stop: com.YoStarEN.AzurLane                                                       
+2026-10-29 20:42:20.279 | INFO | App start: com.YoStarEN.AzurLane                                                      
+2026-10-29 20:42:20.323 | INFO | [ro.product.brand] waydroid                                                           
+2026-10-29 20:42:20.417 | INFO | handle_app_login                                                                      
+2026-10-29 20:42:20.429 | INFO | Screenshot interval set to 1.0s                                                       
+2026-10-29 20:42:20.443 | INFO | <<< APP LOGIN >>>                                                                     
+2026-10-29 20:42:20.510 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:26.371 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:32.319 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:38.332 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:44.321 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:49.426 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:42:55.330 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:00.402 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:06.382 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:12.439 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:18.324 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:24.444 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:30.331 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:35.403 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:41.407 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:47.442 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:53.402 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:43:59.411 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:44:05.372 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:44:11.379 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:44:17.365 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:44:23.573 | INFO | [Device Orientation] 0 (Normal)                                                       
+2026-10-29 20:44:25.279 | INFO | Click (1135,  607) @ LOGIN_CHECK                                                      
+2026-10-29 20:44:25.352 | INFO | Login success                                                                         
+2026-10-29 20:44:31.273 | INFO | Click (1106,  609) @ LOGIN_CHECK                                                      
+2026-10-29 20:44:37.287 | INFO | Click (1110,  607) @ LOGIN_CHECK                                                      
+2026-10-29 20:44:43.271 | INFO | Click (1125,  624) @ LOGIN_CHECK                                                      
+2026-10-29 20:44:48.299 | INFO | Click (1115,  618) @ LOGIN_CHECK                                                      
+2026-10-29 20:44:59.284 | INFO | Login to main confirm                                                                 
+2026-10-29 20:44:59.293 | INFO | Screenshot interval set to 0.3s                                                       
+2026-10-29 20:44:59.301 | INFO | Delay task `Restart` to 2026-10-30 14:00:00 (server_update='00:00')                   
+2026-10-29 20:44:59.332 | INFO | Bind task ['General', 'Alas', 'Restart']                                              
+2026-10-29 20:44:59.341 | INFO | Save config ./config/alas.json, Restart.Scheduler.NextRun=datetime.datetime(2026, 10, 
+30, 14, 0)                                                                                                             
+2026-10-29 20:44:59.364 | INFO | Scheduler: End task `Restart`                                                         
+2026-10-29 20:44:59.371 | INFO | [Server] en                                                                           
+2026-10-29 20:44:59.397 | INFO | Bind task ['General', 'Alas']                                                         
+2026-10-29 20:44:59.405 | INFO | Pending tasks: ['Commission', 'Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild',  
+'Reward', 'Freebies']                                                                                                  
+2026-10-29 20:44:59.412 | INFO | [Task] Commission (Enable, 2020-01-01 00:00:00)                                       
+2026-10-29 20:44:59.417 | INFO | Bind task ['General', 'Alas', 'Commission']                                           
+2026-10-29 20:44:59.446 | INFO | Scheduler: Start task `Commission`                                                    
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                                      COMMISSION                                                       
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+2026-10-29 20:44:59.563 | INFO | <<< UI ENSURE >>>                                                                     
+2026-10-29 20:44:59.573 | INFO | UI get current page                                                                   
+2026-10-29 20:44:59.606 | INFO | [UI] page_main                                                                        
+2026-10-29 20:44:59.619 | INFO | Goto page_reward                                                                      
+2026-10-29 20:44:59.637 | INFO | <<< UI GOTO PAGE_REWARD >>>                                                           
+2026-10-29 20:44:59.664 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:44:59.674 | INFO | Click (  21,  228) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:04.714 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:04.724 | INFO | Click (  22,  221) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:09.800 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:09.812 | INFO | Click (  22,  229) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:14.983 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:14.994 | INFO | Click (  18,  235) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:20.382 | INFO | Click (1182,   95) @ LOGIN_ANNOUNCE_2                                                 
+2026-10-29 20:45:22.159 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:22.169 | INFO | Click (  20,  226) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:27.452 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:27.460 | INFO | Click (  16,  240) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:32.662 | INFO | Page switch: page_main_white -> page_reward                                           
+2026-10-29 20:45:32.671 | INFO | Click (  23,  235) @ MAIN_GOTO_REWARD_WHITE                                           
+2026-10-29 20:45:33.559 | INFO | Page arrive: page_reward                                                              
+2026-10-29 20:45:33.570 | INFO | <<< REWARD RECEIVE >>>                                                                
+2026-10-29 20:45:33.648 | INFO | Click ( 463,  280) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:34.740 | INFO | Click ( 499,  279) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:35.945 | INFO | Click ( 457,  279) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:37.169 | INFO | Click ( 470,  282) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:38.355 | INFO | Click ( 453,  278) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:39.559 | INFO | Click ( 452,  277) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:40.752 | INFO | Click ( 477,  279) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:41.658 | INFO | Click ( 484,  196) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:42.871 | INFO | Click ( 457,  197) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:44.053 | INFO | Click ( 456,  278) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:45.277 | INFO | Click ( 487,  280) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:46.468 | INFO | Click ( 470,  286) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:47.070 | INFO | Click ( 457,  199) @ GET_ITEMS_1                                                      
+2026-10-29 20:45:48.262 | INFO | Click ( 480,  280) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:49.467 | INFO | Click ( 468,  277) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:50.672 | INFO | Click ( 424,  282) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:50.962 | INFO | Click ( 448,  202) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:52.173 | INFO | Click ( 476,  200) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:53.384 | INFO | Click ( 442,  199) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:53.957 | INFO | Click ( 459,  199) @ GET_ITEMS_1                                                      
+2026-10-29 20:45:55.177 | INFO | Click ( 449,  285) @ REWARD_1_WHITE                                                   
+2026-10-29 20:45:56.451 | INFO | Click ( 453,  274) @ REWARD_GOTO_COMMISSION                                           
+2026-10-29 20:45:57.565 | INFO | Click ( 446,  271) @ REWARD_GOTO_COMMISSION                                           
+2026-10-29 20:45:58.186 | INFO | Click ( 466,  197) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:59.359 | INFO | Click ( 471,  189) @ EXP_INFO_S_REWARD                                                
+2026-10-29 20:45:59.663 | INFO | Click ( 444,  197) @ GET_ITEMS_1                                                      
+2026-10-29 20:46:00.892 | INFO | Click ( 441,  278) @ REWARD_GOTO_COMMISSION                                           
+2026-10-29 20:46:02.066 | INFO | Click ( 474,  279) @ REWARD_GOTO_COMMISSION                                           
+2026-10-29 20:46:03.268 | INFO | Click ( 492,  284) @ REWARD_GOTO_COMMISSION                                           
+═══════════════════════════════════════════════════ COMMISSION SCAN ═══════════════════════════════════════════════════
+2026-10-29 20:46:03.906 | INFO | COMMISSION SCAN                                                                       
+2026-10-29 20:46:03.917 | INFO | Commission_switch set to urgent                                                       
+2026-10-29 20:46:03.927 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:03.938 | INFO | Click (  53,  229) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:04.182 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:04.474 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:04.777 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:05.076 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:05.084 | INFO | Click (  47,  243) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:05.373 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:05.673 | INFO | [Commission_switch] urgent                                                            
+───────────────────────────────────────────────────── SCAN DAILY ──────────────────────────────────────────────────────
+2026-10-29 20:46:05.986 | INFO | SCAN DAILY                                                                            
+2026-10-29 20:46:05.995 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:06.003 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:06.009 | INFO | Click (  62,  150) @ COMMISSION_DAILY                                                 
+2026-10-29 20:46:06.281 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:06.577 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:06.587 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:06.876 | INFO | COMMISSION_SCROLL_AREA set to 0.0                                                     
+2026-10-29 20:46:06.887 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:06.897 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:06.977 | INFO | Loading OCR model: ./bin/cnocr_models/cnocr                                           
+2026-10-29 20:46:07.543 | INFO | [COMMISSION 0.633s] (.Tool Prep ll                                                    
+2026-10-29 20:46:07.679 | INFO | Loading OCR model: ./bin/cnocr_models/azur_lane                                       
+2026-10-29 20:46:08.005 | INFO | [DURATION 0.421s] 10:00:00                                                            
+2026-10-29 20:46:08.029 | INFO | [Commission] (.TOOL PREP LL | da69e239ecfa0f470924a1239fe724ac (Genre: major_comm,    
+Status: pending, Duration: 10:00:00)                                                                                   
+2026-10-29 20:46:08.276 | INFO | [COMMISSION 0.226s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:08.502 | INFO | [DURATION 0.174s] 01:00:00                                                            
+2026-10-29 20:46:08.560 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | da69e239ecfa0f470924a1239fe724ac (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:08.980 | INFO | [COMMISSION 0.402s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:09.172 | INFO | [DURATION 0.152s] 01:00:00                                                            
+2026-10-29 20:46:09.186 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:09.689 | INFO | [COMMISSION 0.484s] yPDaily Resource Extraction V                                     
+2026-10-29 20:46:10.078 | INFO | [DURATION 0.362s] 01:00:00                                                            
+2026-10-29 20:46:10.094 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:10.116 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:10.133 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:10.151 | INFO | COMMISSION_SCROLL_AREA set to 1                                                       
+2026-10-29 20:46:10.171 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:10.195 | INFO | Swipe (1259,  280) -> (1261,  540)                                                    
+2026-10-29 20:46:10.647 | INFO | [COMMISSION_SCROLL_AREA] 0.97 (387.13075060532685-206.5)/(599-413)                    
+2026-10-29 20:46:10.659 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:10.944 | INFO | [COMMISSION 0.271s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:11.181 | INFO | [DURATION 0.207s] 01:00:00                                                            
+2026-10-29 20:46:11.199 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 0ccabeb369a20ab373f4cc60bcf710f7 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:11.456 | INFO | [COMMISSION 0.240s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:11.728 | INFO | [DURATION 0.240s] 01:00:00                                                            
+2026-10-29 20:46:11.742 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 3ffa270665f3f3dcf74db54b67bb30a1 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:11.971 | INFO | [COMMISSION 0.204s] yPDaily Resource Extraction V                                     
+2026-10-29 20:46:12.117 | INFO | [DURATION 0.116s] 01:00:00                                                            
+2026-10-29 20:46:12.140 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | da72e1b3adc92b064df05a8bb3f11514 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:12.171 | INFO | [COMMISSION_SCROLL_AREA] 0.97 (387.13075060532685-206.5)/(599-413)                    
+───────────────────────────────────────────────────── SCAN URGENT ─────────────────────────────────────────────────────
+2026-10-29 20:46:12.201 | INFO | SCAN URGENT                                                                           
+2026-10-29 20:46:12.213 | INFO | Commission_switch set to urgent                                                       
+2026-10-29 20:46:12.223 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:12.236 | INFO | Click (  52,  253) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:12.381 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:12.663 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:12.980 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:13.264 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:13.571 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:13.862 | INFO | [COMMISSION 0.279s]                                                                   
+2026-10-29 20:46:13.890 | WARNING | Name with unknown genre:                                                           
+2026-10-29 20:46:14.097 | INFO | [DURATION 0.181s]                                                                     
+2026-10-29 20:46:14.107 | WARNING | Invalid duration:                                                                  
+2026-10-29 20:46:14.118 | INFO | [Commission]  (Invalid)                                                               
+───────────────────────────────────────────────── SHOWING COMMISSION ──────────────────────────────────────────────────
+2026-10-29 20:46:14.139 | INFO | SHOWING COMMISSION                                                                    
+2026-10-29 20:46:14.151 | INFO | Daily commission                                                                      
+2026-10-29 20:46:14.162 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | da69e239ecfa0f470924a1239fe724ac (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:14.176 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00, Repeat: 2)                                                         
+2026-10-29 20:46:14.188 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:14.200 | INFO | [Commission] (.TOOL PREP LL | da69e239ecfa0f470924a1239fe724ac (Genre: major_comm,    
+Status: pending, Duration: 10:00:00)                                                                                   
+2026-10-29 20:46:14.211 | INFO | Urgent commission                                                                     
+2026-10-29 20:46:14.221 | INFO | [Commission]  (Invalid)                                                               
+2026-10-29 20:46:14.231 | INFO | [Running] 0/4                                                                         
+2026-10-29 20:46:14.239 | INFO | [Commission Filter] cube                                                              
+2026-10-29 20:46:14.252 | INFO | [Filter_sort] YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52 (Genre:
+daily_resource, Status: pending, Duration: 1:00:00) > YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 
+(Genre: daily_resource, Status: pending, Duration: 1:00:00, Repeat: 2) > YPDAILY RESOURCE EXTRACTION L |               
+da69e239ecfa0f470924a1239fe724ac (Genre: daily_resource, Status: pending, Duration: 1:00:00) > shortest                
+2026-10-29 20:46:14.274 | INFO | Not enough commissions to run, add shortest daily commissions                         
+2026-10-29 20:46:14.291 | INFO | [Filter_sort] YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52 (Genre:
+daily_resource, Status: pending, Duration: 1:00:00) > YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 
+(Genre: daily_resource, Status: pending, Duration: 1:00:00, Repeat: 2) > YPDAILY RESOURCE EXTRACTION L |               
+da69e239ecfa0f470924a1239fe724ac (Genre: daily_resource, Status: pending, Duration: 1:00:00)                           
+2026-10-29 20:46:14.312 | INFO | Choose daily commission                                                               
+2026-10-29 20:46:14.324 | INFO | YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52 (Genre:              
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:14.339 | INFO | YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 (Genre:              
+daily_resource, Status: pending, Duration: 1:00:00, Repeat: 2)                                                         
+2026-10-29 20:46:14.351 | INFO | YPDAILY RESOURCE EXTRACTION L | da69e239ecfa0f470924a1239fe724ac (Genre:              
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+═══════════════════════════════════════════════════ COMMISSION RUN ════════════════════════════════════════════════════
+2026-10-29 20:46:14.369 | INFO | COMMISSION RUN                                                                        
+2026-10-29 20:46:14.380 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:14.393 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:14.403 | INFO | Click (  46,  148) @ COMMISSION_DAILY                                                 
+2026-10-29 20:46:14.521 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:14.842 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:15.128 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:15.141 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:15.434 | INFO | COMMISSION_SCROLL_AREA set to 0.0                                                     
+2026-10-29 20:46:15.444 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+────────────────────────────────────────────── COMMISSION FIND AND START ──────────────────────────────────────────────
+2026-10-29 20:46:15.664 | INFO | COMMISSION FIND AND START                                                             
+2026-10-29 20:46:15.674 | INFO | Finding commission YPDAILY RESOURCE EXTRACTION V | d4ce8b386ab1f63d4508a7b92a7a8a52   
+(Genre: daily_resource, Status: pending, Duration: 1:00:00)                                                            
+2026-10-29 20:46:15.693 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:16.374 | INFO | [COMMISSION 0.666s] (.Tool Prep ll                                                    
+2026-10-29 20:46:16.587 | INFO | [DURATION 0.160s] 10:00:00                                                            
+2026-10-29 20:46:16.608 | INFO | [Commission] (.TOOL PREP LL | 9856e053b8bd11268ea6fda128ed1ae9 (Genre: major_comm,    
+Status: pending, Duration: 10:00:00)                                                                                   
+2026-10-29 20:46:16.981 | INFO | [COMMISSION 0.349s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:17.260 | INFO | [DURATION 0.240s] 01:00:00                                                            
+2026-10-29 20:46:17.286 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 9856e053b8bd11268ea6fda128ed1ae9 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:17.711 | INFO | [COMMISSION 0.378s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:17.980 | INFO | [DURATION 0.237s] 01:00:00                                                            
+2026-10-29 20:46:18.006 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:18.326 | INFO | [COMMISSION 0.284s] yPDaily Resource Extraction V                                     
+2026-10-29 20:46:18.550 | INFO | [DURATION 0.193s] 01:00:00                                                            
+2026-10-29 20:46:18.570 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | ae653322d55cd26443c6e792c1a86a16 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:18.594 | INFO | <<< COMMISSION START >>>                                                              
+2026-10-29 20:46:18.729 | INFO | Click ( 410,  560) @ COMMISSION                                                       
+2026-10-29 20:46:19.488 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:19.699 | INFO | [COMMISSION 0.191s] yPDaly Resource Extraction V                                      
+2026-10-29 20:46:19.894 | INFO | [DURATION 0.131s] 01:00:00                                                            
+2026-10-29 20:46:19.915 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | 1f2adbb02742bcec3959675af859630e (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:19.940 | INFO | Selected to the correct commission                                                    
+2026-10-29 20:46:19.957 | INFO | Click ( 921,  359) @ COMMISSION_ADVICE                                                
+2026-10-29 20:46:20.395 | INFO | Click (1129,  363) @ COMMISSION_START                                                 
+2026-10-29 20:46:21.295 | INFO | <<< COMMISSION MODE RESET >>>                                                         
+2026-10-29 20:46:21.303 | INFO | Commission_switch set to urgent                                                       
+2026-10-29 20:46:21.309 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:21.316 | INFO | Click (  46,  258) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:21.590 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:21.904 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:22.198 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:22.208 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:22.219 | INFO | Click (  52,  150) @ COMMISSION_DAILY                                                 
+2026-10-29 20:46:22.503 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:22.789 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:22.797 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:23.104 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:23.113 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:23.120 | INFO | COMMISSION_SCROLL_AREA set to 0.0                                                     
+2026-10-29 20:46:23.130 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+────────────────────────────────────────────── COMMISSION FIND AND START ──────────────────────────────────────────────
+2026-10-29 20:46:24.047 | INFO | COMMISSION FIND AND START                                                             
+2026-10-29 20:46:24.055 | INFO | Finding commission YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27   
+(Genre: daily_resource, Status: pending, Duration: 1:00:00)                                                            
+2026-10-29 20:46:24.066 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:24.340 | INFO | [COMMISSION 0.264s] yPDaily Resource Extraction V                                     
+2026-10-29 20:46:24.833 | INFO | [DURATION 0.441s] 00:59:57                                                            
+2026-10-29 20:46:24.858 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | cc093afab2211130bacb7a2b6a506ffd (Genre: 
+daily_resource, Status: running, Duration: 0:59:57)                                                                    
+2026-10-29 20:46:25.462 | INFO | [COMMISSION 0.552s] (.Tool Prep ll                                                    
+2026-10-29 20:46:25.810 | INFO | [DURATION 0.318s] 10:00:00                                                            
+2026-10-29 20:46:25.838 | INFO | [Commission] (.TOOL PREP LL | da69e239ecfa0f470924a1239fe724ac (Genre: major_comm,    
+Status: pending, Duration: 10:00:00)                                                                                   
+2026-10-29 20:46:26.219 | INFO | [COMMISSION 0.352s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:26.453 | INFO | [DURATION 0.188s] 01:00:00                                                            
+2026-10-29 20:46:26.489 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 82576ee50882e18392754a850c0cce27 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:26.849 | INFO | [COMMISSION 0.337s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:27.086 | INFO | [DURATION 0.220s] 01:00:00                                                            
+2026-10-29 20:46:27.114 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | f3e4d0f42ab623ab825dfe76fb60771e (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:27.135 | INFO | <<< COMMISSION START >>>                                                              
+2026-10-29 20:46:27.173 | INFO | Click ( 453,  409) @ COMMISSION                                                       
+2026-10-29 20:46:27.927 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:28.168 | INFO | [COMMISSION 0.229s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:28.408 | INFO | [DURATION 0.207s] 01:00:00                                                            
+2026-10-29 20:46:28.421 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | f418232e63bfb0d85f6e24039c457db2 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:28.449 | INFO | Selected to the correct commission                                                    
+2026-10-29 20:46:28.469 | INFO | Click ( 928,  345) @ COMMISSION_ADVICE                                                
+2026-10-29 20:46:28.905 | INFO | Click (1102,  355) @ COMMISSION_START                                                 
+2026-10-29 20:46:29.810 | INFO | <<< COMMISSION MODE RESET >>>                                                         
+2026-10-29 20:46:29.821 | INFO | Commission_switch set to urgent                                                       
+2026-10-29 20:46:29.828 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:29.834 | INFO | Click (  38,  242) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:30.107 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:30.397 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:30.732 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:30.744 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:30.754 | INFO | Click (  59,  166) @ COMMISSION_DAILY                                                 
+2026-10-29 20:46:31.007 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:31.329 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:31.343 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:31.621 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:31.634 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:31.649 | INFO | COMMISSION_SCROLL_AREA set to 0.0                                                     
+2026-10-29 20:46:31.663 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+────────────────────────────────────────────── COMMISSION FIND AND START ──────────────────────────────────────────────
+2026-10-29 20:46:32.588 | INFO | COMMISSION FIND AND START                                                             
+2026-10-29 20:46:32.600 | INFO | Finding commission YPDAILY RESOURCE EXTRACTION L | da69e239ecfa0f470924a1239fe724ac   
+(Genre: daily_resource, Status: pending, Duration: 1:00:00)                                                            
+2026-10-29 20:46:32.614 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:32.945 | INFO | [COMMISSION 0.318s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:33.179 | INFO | [DURATION 0.205s] 00:59:57                                                            
+2026-10-29 20:46:33.200 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | 5884d30b232aa89eafe7503ffd24d108 (Genre: 
+daily_resource, Status: running, Duration: 0:59:57)                                                                    
+2026-10-29 20:46:33.491 | INFO | [COMMISSION 0.269s] yPDaily Resource Extraction V                                     
+2026-10-29 20:46:33.637 | INFO | [DURATION 0.109s] 00:59:48                                                            
+2026-10-29 20:46:33.652 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION V | cc093afab2211130bacb7a2b6a506ffd (Genre: 
+daily_resource, Status: running, Duration: 0:59:48)                                                                    
+2026-10-29 20:46:34.215 | INFO | [COMMISSION 0.545s] (.Tool Prep ll                                                    
+2026-10-29 20:46:34.584 | INFO | [DURATION 0.309s] 10:00:00                                                            
+2026-10-29 20:46:34.669 | INFO | [Commission] (.TOOL PREP LL | e55b76ce02b4241ac1be844fbdcd4e5f (Genre: major_comm,    
+Status: pending, Duration: 10:00:00)                                                                                   
+2026-10-29 20:46:34.933 | INFO | [COMMISSION 0.235s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:35.131 | INFO | [DURATION 0.150s] 01:00:00                                                            
+2026-10-29 20:46:35.148 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | f3e4d0f42ab623ab825dfe76fb60771e (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:35.167 | INFO | <<< COMMISSION START >>>                                                              
+2026-10-29 20:46:35.226 | INFO | Click ( 504,  556) @ COMMISSION                                                       
+2026-10-29 20:46:35.966 | INFO | <<< COMMISSION DETECT >>>                                                             
+2026-10-29 20:46:36.618 | INFO | [COMMISSION 0.639s] yPDaily Resource Extraction l                                     
+2026-10-29 20:46:36.888 | INFO | [DURATION 0.215s] 01:00:00                                                            
+2026-10-29 20:46:36.905 | INFO | [Commission] YPDAILY RESOURCE EXTRACTION L | f418232e63bfb0d85f6e24039c457db2 (Genre: 
+daily_resource, Status: pending, Duration: 1:00:00)                                                                    
+2026-10-29 20:46:36.925 | INFO | Selected to the correct commission                                                    
+2026-10-29 20:46:36.937 | INFO | Click ( 904,  353) @ COMMISSION_ADVICE                                                
+2026-10-29 20:46:37.392 | INFO | Click (1116,  353) @ COMMISSION_START                                                 
+2026-10-29 20:46:38.289 | INFO | <<< COMMISSION MODE RESET >>>                                                         
+2026-10-29 20:46:38.299 | INFO | Commission_switch set to urgent                                                       
+2026-10-29 20:46:38.307 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:38.317 | INFO | Click (  55,  259) @ COMMISSION_URGENT                                                
+2026-10-29 20:46:38.579 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:38.869 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:39.174 | INFO | Commission_switch set to daily                                                        
+2026-10-29 20:46:39.184 | INFO | [Commission_switch] urgent                                                            
+2026-10-29 20:46:39.192 | INFO | Click (  60,  139) @ COMMISSION_DAILY                                                 
+2026-10-29 20:46:39.459 | INFO | [Commission_switch] unknown                                                           
+2026-10-29 20:46:39.779 | INFO | [Commission_switch] daily                                                             
+2026-10-29 20:46:39.791 | INFO | [COMMISSION_SCROLL_AREA] 0.00 (211.0-210.5)/(599-421)                                 
+2026-10-29 20:46:40.100 | INFO | Commission finish: ['2026-10-29 21:46:21', '2026-10-29 21:46:29', '2026-10-29         
+21:46:38']                                                                                                             
+2026-10-29 20:46:40.113 | INFO | Delay task `Commission` to 2026-10-29 21:46:38 (target=datetime.datetime(2026, 10, 29,
+21, 46, 38))                                                                                                           
+2026-10-29 20:46:40.156 | INFO | Bind task ['General', 'Alas', 'Commission']                                           
+2026-10-29 20:46:40.169 | INFO | Save config ./config/alas.json, Commission.Scheduler.NextRun=datetime.datetime(2026,  
+10, 29, 21, 46, 38)                                                                                                    
+2026-10-29 20:46:40.202 | INFO | Daily commission: 0, filtered_urgent: 0                                               
+2026-10-29 20:46:40.214 | INFO | Scheduler: End task `Commission`                                                      
+2026-10-29 20:46:40.224 | INFO | [Server] en                                                                           
+2026-10-29 20:46:40.274 | INFO | Bind task ['General', 'Alas']                                                         
+2026-10-29 20:46:40.289 | INFO | Pending tasks: ['Tactical', 'Research', 'Dorm', 'Meowfficer', 'Guild', 'Reward',      
+'Freebies']                                                                                                            
+2026-10-29 20:46:40.302 | INFO | [Task] Tactical (Enable, 2020-01-01 00:00:00)                                         
+2026-10-29 20:46:40.311 | INFO | Bind task ['General', 'Alas', 'Tactical']                                             
+2026-10-29 20:46:40.369 | INFO | Scheduler: Start task `Tactical`                                                      
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                                       TACTICAL                                                        
+═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+2026-10-29 20:46:40.508 | INFO | <<< UI ENSURE >>>                                                                     
+2026-10-29 20:46:40.520 | INFO | UI get current page                                                                   
+2026-10-29 20:46:40.655 | INFO | [UI] page_commission                                                                  
+2026-10-29 20:46:40.665 | INFO | Goto page_reward                                                                      
+2026-10-29 20:46:40.681 | INFO | <<< UI GOTO PAGE_REWARD >>>                                                           
+2026-10-29 20:46:40.757 | INFO | Page switch: page_commission -> page_reward                                           
+2026-10-29 20:46:40.767 | INFO | Click (  55,   53) @ BACK_ARROW                                                       
+2026-10-29 20:46:44.197 | INFO | Page arrive: page_reward                                                              
+═══════════════════════════════════════════════ TACTICAL CLASS RECEIVE ════════════════════════════════════════════════
+2026-10-29 20:46:44.211 | INFO | TACTICAL CLASS RECEIVE                                                                
+2026-10-29 20:46:44.271 | INFO | Click ( 463,  417) @ REWARD_2_WHITE                                                   
+2026-10-29 20:46:47.506 | INFO | Click ( 489,  413) @ REWARD_2_WHITE                                                   
+2026-10-29 20:46:49.614 | INFO | <<< TACTICAL GET FINISH >>>                                                           
+2026-10-29 20:46:49.626 | INFO | Tactical status: ['empty', 'empty', 'empty', 'empty']                                 
+2026-10-29 20:46:49.636 | INFO | [TACTICAL_REMAIN 0.000s] []                                                           
+2026-10-29 20:46:49.645 | INFO | Tactical finish: []                                                                   
+2026-10-29 20:46:49.907 | INFO | <<< TACTICAL GET FINISH >>>                                                           
+2026-10-29 20:46:49.918 | INFO | Tactical status: ['empty', 'empty', 'empty', 'empty']                                 
+2026-10-29 20:46:49.925 | INFO | [TACTICAL_REMAIN 0.000s] []                                                           
+2026-10-29 20:46:49.933 | INFO | Tactical finish: []                                                                   
+2026-10-29 20:46:50.216 | INFO | <<< TACTICAL GET FINISH >>>                                                           
+2026-10-29 20:46:50.228 | INFO | Tactical status: ['empty', 'empty', 'empty', 'empty']                                 
+2026-10-29 20:46:50.239 | INFO | [TACTICAL_REMAIN 0.000s] []                                                           
+2026-10-29 20:46:50.251 | INFO | Tactical finish: []                                                                   
+2026-10-29 20:46:50.262 | INFO | Click (  61,   41) @ BACK_ARROW                                                       
