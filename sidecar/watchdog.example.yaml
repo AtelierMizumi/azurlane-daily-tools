@@ -1,0 +1,22 @@
+# Watchdog sidecar config for azurlane-daily-tools
+# Copy to watchdog.yaml and adjust.
+
+alas:
+  container_name: alas          # docker container running ALAS
+  webui_url: http://127.0.0.1:22267
+  repo_dir: ../AzurLaneAutoScript   # relative to this config file
+
+watch:
+  interval_seconds: 30
+  # ALAS log file not updated for this long while scheduler is active => suspicious
+  log_stale_seconds: 300
+  # Two screen captures identical for this long => game likely stuck
+  stall_seconds: 120
+
+notify:
+  # ntfy topic URL. Leave null to disable notifications (log only).
+  # Create your own private topic at https://ntfy.sh (pick an unguessable name).
+  # Example: https://ntfy.sh/azurlane-watch-XXXXXX
+  ntfy_url: null
+  # Notify only after the issue is seen this many consecutive checks
+  consecutive_failures: 2

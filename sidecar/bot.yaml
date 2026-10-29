@@ -1,0 +1,7 @@
+# commission_bot configuration — all fields optional, defaults in commission_bot.py:DEFAULTS
+serial: 192.168.240.112:5555
+adb: null            # null = auto-detect: $ADB, ~/Android/Sdk/platform-tools/adb, PATH
+max_steps: 60
+claim_urgent: true   # visit the URGENT tab after DAILY has nothing left
+scroll_list: true    # scroll the commission list once per visit
+ntfy: null           # e.g. https://ntfy.sh/your-topic — POSTs a run summary when set

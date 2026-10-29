@@ -1,0 +1,12 @@
+# Upstream ALAS is its own git repo; do not track it here
+AzurLaneAutoScript/
+# SDD scratch workspace (git-ignored by design)
+.superpowers/
+# Python / local artifacts
+sidecar/.venv/
+sidecar/runs/
+**/__pycache__/
+sidecar/watchdog.yaml
+sidecar/watchdog.log
+# Local Claude settings
+.claude/
