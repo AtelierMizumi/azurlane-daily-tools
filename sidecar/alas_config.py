@@ -34,8 +34,13 @@ def _get(data: dict, keys: tuple[str, ...]) -> object:
 
 def _set(data: dict, keys: tuple[str, ...], value: object) -> None:
     cur = data
-    for key in keys[:-1]:
+    for i, key in enumerate(keys[:-1]):
         cur = cur.setdefault(key, {})
+        if not isinstance(cur, dict):
+            raise ValueError(
+                f"cannot set {'.'.join(keys)}: {'.'.join(keys[:i + 1])} is "
+                f"{cur!r}, not an object"
+            )
     cur[keys[-1]] = value
 
 
@@ -62,10 +67,10 @@ def load_alas_config(path: Path) -> dict:
 
 def apply_alas_config(path: Path) -> Path:
     data = load_alas_config(path)
+    for keys, value in REQUIRED.items():
+        _set(data, keys, value)  # may raise ValueError; nothing written yet
     backup = path.with_name(path.name + ".bak")
     shutil.copy2(path, backup)
-    for keys, value in REQUIRED.items():
-        _set(data, keys, value)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     return backup
 
@@ -86,7 +91,8 @@ def _run_instances(value: str) -> list[str]:
     value = value.strip("\n\r\t' ")
     if not value or value.lower() == "null":
         return []
-    return [part.strip(" ['\"]") for part in value.split(",") if len(part)]
+    names = [part.strip(" ['\"]") for part in value.split(",") if len(part)]
+    return [n for n in names if n]
 
 
 def check_deploy_run(path: Path) -> list[str]:
@@ -95,14 +101,14 @@ def check_deploy_run(path: Path) -> list[str]:
     if m is None:
         return [f"deploy.yaml has no Run key, expected {RUN_LINE}"]
     if INSTANCE not in _run_instances(m.group(2)):
-        return [f"deploy.yaml Run is {m.group(2).strip() or 'empty'}, expected {RUN_LINE}"]
+        return [f"deploy.yaml Run is {m.group(2).strip() or 'empty'}, expected a list including \"{INSTANCE}\", e.g. {RUN_LINE}"]
     return []
 
 
 def apply_deploy_run(path: Path) -> Path:
-    """Set Run to ["alas"] with a targeted line replacement; return the backup path.
+    """Add "alas" to the Run list (existing instances first); return the backup path.
 
-    The file is edited as text (not re-dumped as YAML) so comments and layout stay.
+    A null, empty or missing Run becomes ["alas"]. The file is edited as text (not re-dumped as YAML) so comments and layout stay.
     """
     path = Path(path)
     raw = path.read_bytes()
@@ -111,7 +117,11 @@ def apply_deploy_run(path: Path) -> Path:
     shutil.copy2(path, backup)
     m = _RUN_RE.search(text)
     if m is not None:
-        text = text[:m.start()] + m.group(1) + RUN_LINE + text[m.end():]
+        instances = _run_instances(m.group(2))
+        if INSTANCE not in instances:
+            instances.append(INSTANCE)
+        line = "Run: [" + ", ".join(f'"{n}"' for n in instances) + "]"
+        text = text[:m.start()] + m.group(1) + line + text[m.end():]
     else:
         newline = "\r\n" if "\r\n" in text else "\n"
         if text and not text.endswith("\n"):

@@ -173,11 +173,28 @@ class Frozen(unittest.TestCase):  # Ruling 37
 
 class HostAdb(unittest.TestCase):  # Ruling 36
     def test_open_port_is_a_problem_with_remedy(self):
+        # Fixture: inspect=false (container stopped). With the container running, the
+        # port is ALAS's own adb server (network_mode: host) and is not probed.
         with mock.patch.object(preflight, "_adb_port_open", lambda *a, **k: True):
-            problems = check_waydroid(FakeRunner(OK), "alas", DEV)
+            problems = check_waydroid(FakeRunner({**OK, "inspect": (0, "false")}), "alas", DEV)
         self.assertEqual(len(problems), 1)
         self.assertIn("host adb server is running on :5037", problems[0])
         self.assertIn("adb kill-server", problems[0])
+
+    def test_running_container_skips_the_probe(self):  # I1: ALAS's adb listens on :5037
+        probe = mock.Mock(return_value=True)
+        with mock.patch.object(preflight, "_adb_port_open", probe):
+            problems = check_waydroid(FakeRunner({**OK, "inspect": (0, "true")}), "alas", DEV)
+        self.assertEqual(problems, [])
+        probe.assert_not_called()
+
+    def test_missing_container_still_probes(self):
+        probe = mock.Mock(return_value=True)
+        with mock.patch.object(preflight, "_adb_port_open", probe):
+            problems = check_waydroid(FakeRunner({**OK, "inspect": (1, "No such container")}),
+                                      "alas", DEV)
+        probe.assert_called_once()
+        self.assertTrue(any("host adb server" in p for p in problems))
 
     def test_probe_never_invokes_adb_binary(self):
         r = FakeRunner(OK)

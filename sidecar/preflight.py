@@ -109,6 +109,7 @@ def check_waydroid(runner: Runner, container: str, device: DeviceCfg) -> list[st
         ["docker", "inspect", "--type", "container", "-f", "{{.State.Running}}", container],
         CMD_TIMEOUT,
     )
+    container_running = rc == 0 and out.strip() == "true"
     if rc != 0:
         if rc not in (124, 127) and "no such" in out.lower():
             problems.append(
@@ -119,8 +120,11 @@ def check_waydroid(runner: Runner, container: str, device: DeviceCfg) -> list[st
             remedy = "install docker" if rc == 127 else "run `docker ps` to check the Docker daemon"
             problems.append(f"{_failure('docker inspect', rc, out)}; {remedy}")
 
-    # 4. The host must not run its own adb server (it would fight ALAS's).
-    if _adb_port_open("127.0.0.1", HOST_ADB_PORT, 1.0):
+    # 4. The host must not run its own adb server (it would fight ALAS's). Skipped
+    #    when the container is running: ALAS uses network_mode: host, so :5037 is its
+    #    own adb server (and `adb kill-server` would kill it). The orchestrator
+    #    reports that case as already_running.
+    if not container_running and _adb_port_open("127.0.0.1", HOST_ADB_PORT, 1.0):
         problems.append(
             f"host adb server is running on :{HOST_ADB_PORT}; run `adb kill-server`"
         )

@@ -620,6 +620,55 @@ def _check_main(world, runner, argv=("--check",)):
     return code, so.getvalue()
 
 
+class RunningContainerAdbProbe(unittest.TestCase):  # I1
+    def test_running_container_with_open_port_is_already_running(self):
+        probe = mock.Mock(return_value=True)
+        r = FakeRunner({**OK, "inspect": (0, "true")})
+        with mock.patch.object(preflight, "_adb_port_open", probe):
+            out = go(make_world(), r)
+        self.assertEqual(out["result"], "already_running")
+        probe.assert_not_called()
+        self.assertFalse(calls_of(r, ["docker", "start"]))
+        self.assertFalse(calls_of(r, ["docker", "stop"]))
+
+    def test_check_running_container_open_port_no_host_adb_problem(self):
+        probe = mock.Mock(return_value=True)
+        r = FakeRunner(OK)
+        with mock.patch.object(preflight, "_adb_port_open", probe):
+            code, so = _check_main(make_world(), r)
+        self.assertEqual(code, 0)
+        self.assertNotIn("host adb", so)
+        probe.assert_not_called()
+        self.assertTrue(calls_of(r, ["docker", "exec"]))  # resolution still checked
+
+    def test_stopped_container_with_open_port_still_fails_preflight(self):
+        r = FakeRunner(STOPPED)
+        with mock.patch.object(preflight, "_adb_port_open", lambda *a, **k: True):
+            out = go(make_world(), r)
+        self.assertEqual(out["result"], "preflight_failed")
+        self.assertIn("host adb server", out["stages"][0][2])
+        self.assertFalse(calls_of(r, ["docker", "start"]))
+
+
+class MalformedAlasJson(unittest.TestCase):  # Minor 1
+    def test_apply_with_non_dict_intermediate_is_config_failed(self):
+        w = make_world(alas={"GameManager": {"AutoRestart": False}, "Commission": None})
+        r = FakeRunner(STOPPED)
+        out = go(w, r, apply=True)
+        self.assertEqual(out["result"], "config_failed")
+        stage = [s for s in out["stages"] if s[0] == "config"][0]
+        self.assertFalse(stage[1])
+        self.assertIn("Commission", stage[2])
+        self.assertFalse(calls_of(r, ["docker", "start"]))
+
+
+class DeployRunAddsAlas(unittest.TestCase):  # Minor 2
+    def test_apply_keeps_other_instances(self):
+        w = make_world(deploy=GOOD_DEPLOY.replace('Run: ["alas"]', 'Run: ["alas2"]'))
+        go(w, FakeRunner(STOPPED), apply=True)
+        self.assertIn('Run: ["alas2", "alas"]', (w / "config" / "deploy.yaml").read_text())
+
+
 class CheckResolutionStage(unittest.TestCase):  # Ruling 31
     def test_stopped_container_reports_skipped_resolution_and_passes(self):
         w = make_world()

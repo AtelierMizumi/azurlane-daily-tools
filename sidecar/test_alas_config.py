@@ -90,6 +90,33 @@ class DeployRun(unittest.TestCase):  # Ruling 32
         self.assertEqual(p.read_text(), DEPLOY.replace("Run: null", 'Run: ["alas"]'))
         self.assertEqual(check_deploy_run(p), [])
 
+    def test_apply_adds_alas_to_existing_list_keeping_others(self):
+        for before, after in (('["alas2"]', '["alas2", "alas"]'),
+                              ("['a','b']", '["a", "b", "alas"]'),
+                              ('["alas2","alas3"]', '["alas2", "alas3", "alas"]')):
+            p = write(DEPLOY.replace("Run: null", f"Run: {before}"))
+            apply_deploy_run(p)
+            self.assertEqual(p.read_text(), DEPLOY.replace("Run: null", f"Run: {after}"), before)
+            self.assertEqual(check_deploy_run(p), [])
+
+    def test_apply_null_and_empty_set_alas_only(self):
+        for before in ("null", "[]", ""):
+            p = write(DEPLOY.replace("Run: null", f"Run: {before}"))
+            apply_deploy_run(p)
+            self.assertEqual(p.read_text(), DEPLOY.replace("Run: null", 'Run: ["alas"]'), before)
+
+    def test_apply_other_instance_keeps_backup_of_original(self):
+        text = DEPLOY.replace("Run: null", 'Run: ["alas2"]')
+        p = write(text)
+        backup = apply_deploy_run(p)
+        self.assertEqual(backup.read_text(), text)
+
+    def test_apply_alas_config_non_dict_intermediate_raises_valueerror(self):
+        p = Path(tempfile.mkdtemp()) / "alas.json"
+        p.write_text(json.dumps({"Commission": None}))
+        with self.assertRaisesRegex(ValueError, "Commission"):
+            apply_alas_config(p)
+
     def test_apply_keeps_indent_and_crlf(self):
         text = DEPLOY.replace("\n", "\r\n")
         p = write(text, newline="")
