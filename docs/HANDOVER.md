@@ -51,6 +51,8 @@ uv run python alas_report.py --log ~/Projects/Tools/azurlane-daily-tools/AzurLan
 
 Trạng thái khi bàn giao: 202 unit test pass, state machine PASS, selftest exit 0.
 
+Cập nhật 2026-10-29 tối: **e2e thật đã PASS** — `--e2e --apply` kết thúc `RESULT: success`, exit 0, ~77 giây (container stopped → apply config → docker start → ALAS chạy Commission → stop sạch), summary tại `sidecar/runs/20261029-225222/summary.json`. Sau fix marker "App is already running" thì 204 unit test pass (parser đã được validate trên log thật của run).
+
 ## 4. Những gì đã làm (theo commit)
 
 Branch `worktree-azur-final-fix`, từ `master`:
@@ -88,29 +90,21 @@ Các ruling 19–29 chỉ nằm trong prompt dispatch, không có trong ledger:
 - R20: `--check` chỉ kiểm tra, không start container.
 - R21: chế độ mặc định dùng cùng định dạng báo cáo với `--e2e`.
 - R22: exit 0 chỉ khi success và không có `docker stop` lỗi.
-- R27: `--check` và `--e2e` trên máy thật là PENDING.
+- R27: `--check` và `--e2e` trên máy thật là PENDING. **ĐÃ xong 2026-10-29: cả hai PASS.**
 - R28: README (đã sửa bởi R30).
 - R29: commit riêng cho README.
 
 ## 6. Trạng thái e2e và việc người dùng phải làm
 
-E2E thật **chưa chạy thành công**. Các bước đã xác nhận trên máy người dùng:
+E2E thật **đã PASS** ngày 2026-10-29 (xem mục 3). Danh sách điều kiện dưới đây giữ lại làm tham khảo cho lần chạy sau:
 
-- `--check` đã chạy được. Lỗi preflight do `uv` đã sửa (R-fix 11f9008). Lỗi config còn lại: thiếu `alas.json`.
-- ALAS scheduler đã chạy thật (xem log `log/2026-10-29_alas.txt`):
-  - Commission lần đầu (20:42): game không chạy, không quét, ALAS restart. Tool báo `no_commission`. Đúng.
-  - Commission lần hai (20:44–20:46): quét và hoàn thành. Tool báo `done`. Đúng.
-  - Tactical, Research, Dorm, Meowfficer, Guild chạy xong. Guild bị lỗi timer trong game ("guild logistics refresh bug") nên ALAS tự restart app. Đây là hành vi có sẵn của ALAS.
-
-Điều kiện để `--e2e` chạy:
-
-1. Dừng scheduler ALAS trong GUI, rồi `docker stop alas`. Orchestrator yêu cầu container đang dừng.
-2. `AzurLaneAutoScript/config/alas.json` phải tồn tại (mở ALAS GUI một lần, tạo instance `alas`).
-3. `AzurLaneAutoScript/config/deploy.yaml` và `log/` phải ghi được. Hiện chúng có thể thuộc uid 65534 (do container tạo). Nếu vậy, `--apply` báo `PermissionError`. Cần chown hoặc đặt `Run: ["alas"]` qua GUI.
-4. `Alas.Emulator.Serial` trong `alas.json` phải bằng `device.serial` trong `daily.yaml` (R43, kiểm tra thủ công).
-5. `sidecar/daily.yaml` tồn tại. Đã tạo trong worktree với `repo_dir` tuyệt đối. File này bị git-ignore.
-6. Waydroid session đang RUNNING và không FROZEN. Nếu FROZEN: `waydroid app launch com.YoStarEN.AzurLane`.
-7. `adb kill-server` trên host.
+1. Dừng scheduler ALAS trong GUI, rồi `docker stop alas`. Orchestrator yêu cầu container đang dừng. Lưu ý: lần stop đầu ALAS shutdown chậm nên bị SIGKILL (Exited 137) — vẫn ổn.
+2. `AzurLaneAutoScript/config/alas.json` phải tồn tại. **ĐÃ ĐẠT** (GUI đã tạo).
+3. `deploy.yaml` phải ghi được (thuộc user, không phải root). **ĐÃ ĐẠT** qua chown. `log/` chỉ cần đọc được, không cần ghi.
+4. `Alas.Emulator.Serial` trong `alas.json` bằng `device.serial` trong `daily.yaml`. **ĐÃ ĐẠT** (cả hai `192.168.240.112:5555`).
+5. `sidecar/daily.yaml` tồn tại. **ĐÃ ĐẠT** (trong worktree, git-ignored).
+6. Waydroid session RUNNING và không FROZEN. **ĐÃ ĐẠT**.
+7. `adb kill-server` trên host — nếu `--check` PASS preflight thì port 5037 đã rảnh, bước này không cần nữa.
 
 Sau đó chạy `--check`, rồi `--e2e`. Dán output và exit code để đánh giá.
 
@@ -169,13 +163,16 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 - Marker commission là `COMMISSION SCAN` (uppercase), không phải `Commission detect`. Log thật không có `Commission detect`.
 - NextRun đôi khi là datetime 5 trường (khi giây = 0). Đã xử lý trong `alas_report.py`.
 - Restart của ALAS có thể bị delay tới ngày hôm sau 14:00 (`server_update='00:00'`). Đây là hành vi ALAS, không phải lỗi tool.
+- Mỗi lần ALAS shutdown (`docker stop`) đều ghi lại `config/alas.json` bằng root qua bind mount (xác nhận thật 2 lần: 22:40:33, 22:51:59). `deploy.yaml` ALAS không đụng nên giữ quyền user. **Trước mỗi lần cần `--apply`, chown lại `alas.json`.**
+- `daily.yaml` git-ignored, không theo merge. Chạy orchestrator từ checkout nào thì checkout đó phải có `sidecar/daily.yaml` (sao chép từ worktree nếu cần).
+- ALAS in `App is already running, goto main page` (alas.py:177) khi game còn sống — parser đã tính đây là app started + login ok. Đường `App start`/`Login success` (game chết, restart thật) chưa từng chạy qua thật.
 - Sandbox không kết nối được Waydroid, docker hay adb trên máy người dùng. Mọi kiểm tra thiết bị phải do người dùng chạy.
 - Lệnh `sed`/`grep` với biến và nhiều bước bị guard từ chối trong session worktree. Tách thành các lệnh đơn giản, dùng đường dẫn tuyệt đối.
 
 ## 11. Việc tiếp theo, theo thứ tự
 
-1. Người dùng dừng scheduler và container, hoàn thành mục 6, chạy `--check` rồi `--e2e`. Gửi output.
-2. Dựa trên kết quả e2e, sửa lỗi nếu có. Nếu PASS, chốt merge hoặc giữ branch.
-3. Chốt A/B/C. Nếu chọn C: viết spec cho P0 (phần còn lại) và P1, duyệt, rồi lập kế hoạch.
-4. Kiểm tra `Commission` trong ALAS (`commission.py`) để xác định đường hủy commission (P1).
-5. Với P5 (PvP), cần kiểm tra OCR đọc sức mạnh đối thủ trước khi thiết kế.
+1. ~~Người dùng dừng scheduler và container, hoàn thành mục 6, chạy `--check` rồi `--e2e`.~~ **Đã xong 2026-10-29, e2e PASS.**
+2. ~~Dựa trên kết quả e2e, sửa lỗi nếu có. Nếu PASS, chốt merge hoặc giữ branch.~~ **Đã merge `worktree-azur-final-fix` vào `master` (fast-forward), worktree giữ nguyên.**
+3. ~~Chốt A/B/C.~~ **Đã chốt C (2026-10-29).** Đang viết spec cho P0 (phần còn lại) và P1, chờ duyệt rồi lập kế hoạch.
+4. Kiểm tra `Commission` trong ALAS (`commission.py`) để xác định đường hủy commission (P1). **Đã kiểm tra sơ bộ:** ALAS không có logic hủy; hook point là `_commission_choose` khi `running_count >= max_commission`; game cho hủy commission đang chạy (mất dầu, không nhận thưởng); pattern hủy tham khảo `module/island/order.py` `reject_order()`. Chi tiết trong spec P1.
+5. Với P5 (PvP), cần kiểm tra OCR đọc sức mạnh đối thủ trước khi thiết kế. **Đã kiểm tra:** `module/exercise/opponent.py` đã OCR sẵn power + level của cả 4 đối thủ; P5 khả năng chỉ cần config (`easiest` + `Exercise_LowHpThreshold`), gần như không cần patch.
