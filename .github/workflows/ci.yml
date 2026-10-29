@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen
+        working-directory: sidecar
+      - name: Offline test suite
+        run: uv run python azdaily.py test
+        working-directory: sidecar
+      - name: CLI smoke
+        run: |
+          uv run python azdaily.py --version
+          uv run python azdaily.py --help
+        working-directory: sidecar

@@ -1,6 +1,6 @@
 [project]
 name = "azurlane-daily-sidecar"
-version = "0.1.0"
+version = "0.2.0"
 description = "Watchdog and intelligence sidecar around ALAS (AzurLaneAutoScript)"
 requires-python = ">=3.10"
 dependencies = [

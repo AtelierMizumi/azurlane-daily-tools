@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Unified entry point for azurlane-daily-tools. Usage: ./azdaily <command>
+# See docs/HUONG-DAN.md for the full guide.
+set -euo pipefail
+cd "$(dirname "$(readlink -f "$0")")/sidecar"
+command -v uv >/dev/null 2>&1 || {
+    echo "error: uv is required (https://docs.astral.sh/uv/getting-started/installation/)" >&2
+    exit 1
+}
+exec uv run python azdaily.py "$@"
