@@ -80,3 +80,8 @@ class NewestLog(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_reward_end_sets_reward_done(self):
+        s = parse_lines(["Scheduler: End task `Commission`", "Scheduler: End task `Reward`"])
+        self.assertTrue(s.commission_done)
+        self.assertTrue(s.reward_done)

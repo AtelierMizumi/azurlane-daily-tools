@@ -26,13 +26,16 @@ import yaml
 
 from alas_config import (apply_alas_config, apply_deploy_run, check_alas_config,
                          check_deploy_run, commission_next_run_warning,
-                         load_alas_config, mission_claim_note)
+                         load_alas_config, mission_claim_note, reward_is_due)
 from daily_config import DailyConfig, load_daily_config
 from log_parser import RunState, parse_lines
 from preflight import Runner, SubprocessRunner, check_resolution, check_waydroid
 
 WEBUI_WAIT_SECONDS = 120
 WEBUI_POLL_SECONDS = 5
+# When Reward (mission claim) is due, keep the container alive this long after
+# Commission ends so the scheduler can reach it before docker stop.
+REWARD_GRACE_SECONDS = 600
 LOG_POLL_SECONDS = 30
 DOCKER_TIMEOUT = 60
 NTFY_TIMEOUT = 10
@@ -60,7 +63,7 @@ NOT_REACHED = "not reached"
 # The e2e report always lists these, in this order (Ruling 35). Other stages
 # (container state, resolution, ...) are slotted in after the stage they follow.
 CANONICAL_STAGES = ["preflight", "config", "docker start", "webui", "app started",
-                    "login ok", "commission started", "commission done",
+                    "login ok", "commission started", "commission done", "reward",
                     "summary written", "docker stop"]
 
 
@@ -230,6 +233,7 @@ def _run_core(
             emit("config apply", not problems,
                  "backup at " + ", ".join(str(b) for b in backups))
         next_run_warning = commission_next_run_warning(data)
+        reward_due_flag = reward_is_due(data)
     except (OSError, ValueError) as e:  # FileNotFoundError, bad JSON
         emit("config", False, str(e))
         return finish("config_failed")
@@ -275,14 +279,25 @@ def _run_core(
             result = "webui_timeout"
             return finish(result)
 
-        # 6. Watch the log (only lines written since the snapshot).
+        # 6. Watch the log (only lines written since the snapshot). When the
+        # Reward task (mission claim) is due, keep watching for a bounded
+        # grace period after Commission ends — the scheduler may pick other
+        # tasks first and stopping the container immediately would miss it.
         deadline = clock() + cfg.run_minutes * 60
         seen: list[str] = []
         state = RunState()
+        reward_deadline = None
         while True:
             seen.extend(tail.read_new())
             state = parse_lines(seen)
-            if state.commission_done or clock() >= deadline:
+            if state.commission_done:
+                if not reward_due_flag or state.reward_done:
+                    break
+                if reward_deadline is None:
+                    reward_deadline = clock() + REWARD_GRACE_SECONDS
+                if clock() >= reward_deadline:
+                    break
+            if clock() >= deadline:
                 break
             sleep(LOG_POLL_SECONDS)
 
@@ -291,6 +306,15 @@ def _run_core(
                               ("commission started", state.commission_started),
                               ("commission done", state.commission_done)):
             emit(name, reached, "seen in log" if reached else NOT_REACHED)
+        if not reward_due_flag:
+            emit("reward", True,
+                 "not due (Reward.NextRun in the future or the task is disabled)")
+        elif state.reward_done:
+            emit("reward", True, "claimed (End task `Reward` seen in log)")
+        else:
+            emit("reward", False,
+                 "Reward was due but never ran within "
+                 f"{REWARD_GRACE_SECONDS // 60} min after Commission")
 
         # Ruling 46: success needs the commission scan to have started AND the task
         # to have ended AND no errors. "End task" alone is logged even when ALAS
@@ -312,6 +336,13 @@ def _run_core(
             detail = f"Commission not finished within {cfg.run_minutes} min"
             if next_run_warning:
                 detail += f"; {next_run_warning}"
+        # A run can succeed without any app-transition markers (the game was
+        # already usable), which must not read as a failure.
+        if result == "success" and not state.app_started and not state.login_ok:
+            for i, (name, _ok, _detail) in enumerate(stages):
+                if name in ("app started", "login ok"):
+                    stages[i] = (name, True,
+                                 "no app transition in log (game was already usable)")
         emit("commission", result == "success", detail)
         return finish(result)
     except Exception as e:  # report instead of crashing; `finally` still stops the container

@@ -12,7 +12,8 @@ ORIGINAL_RUNS_DIR = azurlane_daily.RUNS_DIR  # before setUpModule patches it
 DONE = "Scheduler: End task `Commission`"
 
 CANONICAL = ["preflight", "config", "docker start", "webui", "app started", "login ok",
-             "commission started", "commission done", "summary written", "docker stop"]  # Ruling 35
+             "commission started", "commission done", "reward",
+             "summary written", "docker stop"]  # Ruling 35
 
 GOOD_DEPLOY = """Deploy:
   Alas:
@@ -792,6 +793,48 @@ class E2eStages(unittest.TestCase):  # Ruling 35
         canon = {s[0]: s for s in self._canon(out)}
         for name in ("app started", "login ok", "commission started", "commission done"):
             self.assertEqual(canon[name][2], "not reached")
+
+
+class RewardStage(unittest.TestCase):
+    """Mission claim: the pipeline waits for a due Reward task after Commission."""
+
+    def _world(self, reward_next_run):
+        alas = json.loads(json.dumps(GOOD_ALAS))
+        alas["Reward"]["Scheduler"]["NextRun"] = reward_next_run
+        return make_world(alas=alas)
+
+    def test_reward_claimed_when_end_seen(self):
+        out = go(self._world("2026-10-29 23:00:00"), FakeRunner(STOPPED),
+                 lines=["COMMISSION SCAN", DONE, "Scheduler: End task `Reward`"])
+        canon = {s[0]: s for s in out["stages"]}
+        self.assertTrue(canon["reward"][1])
+        self.assertIn("claimed", canon["reward"][2])
+        self.assertEqual(out["result"], "success")
+
+    def test_reward_not_due_passes_without_waiting(self):
+        out = go(make_world(), FakeRunner(STOPPED), lines=["COMMISSION SCAN", DONE])
+        canon = {s[0]: s for s in out["stages"]}
+        self.assertTrue(canon["reward"][1])
+        self.assertIn("not due", canon["reward"][2])
+
+    def test_reward_due_but_never_runs_fails_stage_not_result(self):
+        # The fake clock walks the 10-minute grace in LOG_POLL_SECONDS steps.
+        out = go(self._world("2020-01-01 00:00:00"), FakeRunner(STOPPED),
+                 lines=["COMMISSION SCAN", DONE])
+        canon = {s[0]: s for s in out["stages"]}
+        self.assertFalse(canon["reward"][1])
+        self.assertEqual(out["result"], "success")  # R10/R46 stays commission-based
+
+
+class AppTransitionSkip(unittest.TestCase):
+    def test_success_without_app_markers_skips_app_stages(self):
+        # A run can succeed with no goto_main/login lines at all (the game was
+        # already usable) — seen for real on 2026-10-30.
+        out = go(make_world(), FakeRunner(STOPPED), lines=["COMMISSION SCAN", DONE])
+        canon = {s[0]: s for s in out["stages"]}
+        self.assertTrue(canon["app started"][1])
+        self.assertIn("no app transition", canon["app started"][2])
+        self.assertTrue(canon["login ok"][1])
 
 
 class NoCommissionIsNotSuccess(unittest.TestCase):  # Ruling 46

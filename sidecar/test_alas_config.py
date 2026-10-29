@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 from alas_config import (check_alas_config, apply_alas_config, load_alas_config,
                          check_deploy_run, apply_deploy_run, commission_next_run_warning,
-                         mission_claim_note, REQUIRED)
+                         mission_claim_note, reward_is_due, REQUIRED)
 
 GOOD = {"GameManager": {"GameManager": {"AutoRestart": True}}, "Commission": {"Scheduler": {"Enable": True}},
         "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
@@ -230,3 +230,22 @@ class MissionClaimNote(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RewardIsDue(unittest.TestCase):
+    NOW = datetime(2026, 10, 30, 2, 0, 0)
+
+    def _data(self, enable=True, next_run="2026-10-29 23:00:00"):
+        d = json.loads(json.dumps(GOOD))
+        d["Reward"]["Scheduler"]["Enable"] = enable
+        d["Reward"]["Scheduler"]["NextRun"] = next_run
+        return d
+
+    def test_enabled_and_past_is_due(self):
+        self.assertTrue(reward_is_due(self._data(), self.NOW))
+
+    def test_future_or_disabled_or_missing_is_not(self):
+        self.assertFalse(reward_is_due(self._data(next_run="2026-10-30 23:00:00"), self.NOW))
+        self.assertFalse(reward_is_due(self._data(enable=False), self.NOW))
+        self.assertFalse(reward_is_due({}, self.NOW))
+        self.assertFalse(reward_is_due(self._data(next_run=None), self.NOW))

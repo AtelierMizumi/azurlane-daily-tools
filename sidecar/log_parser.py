@@ -36,6 +36,7 @@ _APP_ALREADY_RUNNING = re.compile(r"App is already running")
 _LOGIN_OK = re.compile(r"Login success")
 _COMMISSION_STARTED = re.compile(r"COMMISSION SCAN")
 _COMMISSION_DONE = re.compile(r"Scheduler:\s*End task\s*`Commission`")
+_REWARD_DONE = re.compile(r"Scheduler:\s*End task\s*`Reward`")
 _ERROR = re.compile(
     r"GameStuckError|GameNotRunningError|GameTooManyClickError|Traceback|\bCRITICAL\b"
 )
@@ -47,6 +48,7 @@ class RunState:
     login_ok: bool = False
     commission_started: bool = False
     commission_done: bool = False
+    reward_done: bool = False
     errors: list[str] = field(default_factory=list)
 
 
@@ -67,6 +69,8 @@ def parse_lines(lines: Iterable[str]) -> RunState:
             state.commission_started = True
         if _COMMISSION_DONE.search(line):
             state.commission_done = True
+        if _REWARD_DONE.search(line):
+            state.reward_done = True
         if _ERROR.search(line):
             state.errors.append(line.strip())
     return state

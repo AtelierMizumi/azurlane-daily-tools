@@ -187,6 +187,27 @@ def mission_claim_note(data: dict, now: datetime | None = None) -> str | None:
     except (ValueError, TypeError):
         return None
     if next_run <= now:
-        return "Reward task (mission claim) is due; ALAS will run it in this window"
+        return ("Reward task (mission claim) is due; ALAS will run it when the "
+                "scheduler reaches it (the run-once pipeline waits for it after "
+                "Commission)")
     return (f"Reward task (mission claim) NextRun {value} is in the future; "
             f"missions will be claimed on a later container start")
+
+
+def reward_is_due(data: dict, now: datetime | None = None) -> bool:
+    """True when the Reward task is enabled and its NextRun has passed.
+
+    Used by the run-once pipeline: a due Reward task is worth waiting for
+    after Commission ends, because stopping the container immediately is how
+    mission claims get missed (seen for real on 2026-10-30).
+    """
+    if _get(data, ("Reward", "Scheduler", "Enable")) is not True:
+        return False
+    value = _get(data, ("Reward", "Scheduler", "NextRun"))
+    if not isinstance(value, str):
+        return False
+    try:
+        next_run = datetime.fromisoformat(value)
+        return next_run <= (now or datetime.now())
+    except (ValueError, TypeError):
+        return False
