@@ -65,9 +65,14 @@ def load_daily_config(path: Path) -> DailyConfig:
         )
     resolution = (int(match.group(1)), int(match.group(2)))
 
+    raw_serial = _require(data, "device.serial")
+    serial = "" if raw_serial is None else str(raw_serial).strip()
+    if not serial:
+        raise ValueError("daily config: 'device.serial' must not be empty (e.g. 192.168.240.112:5555)")
+
     device = DeviceCfg(
         profile=profile,
-        serial=str(_require(data, "device.serial")),
+        serial=serial,
         resolution=resolution,
     )
 

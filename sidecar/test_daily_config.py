@@ -50,6 +50,36 @@ class LoadConfig(unittest.TestCase):
         self.assertEqual(cfg.device.serial, "10.0.0.9:5555")
 
 
+class SerialValidation(unittest.TestCase):  # Ruling 40
+    def _load(self, text):
+        p = Path(tempfile.mkdtemp()) / "daily.yaml"
+        p.write_text(text)
+        return load_daily_config(p)
+
+    def test_null_serial_rejected(self):
+        with self.assertRaisesRegex(ValueError, "device.serial"):
+            self._load(GOOD.replace("serial: 192.168.240.112:5555", "serial:"))
+
+    def test_explicit_null_serial_rejected(self):
+        with self.assertRaisesRegex(ValueError, "device.serial"):
+            self._load(GOOD.replace("serial: 192.168.240.112:5555", "serial: null"))
+
+    def test_blank_serial_rejected(self):
+        for blank in ('""', '"   "', '"\\t"'):
+            with self.assertRaisesRegex(ValueError, "device.serial"):
+                self._load(GOOD.replace("serial: 192.168.240.112:5555", f"serial: {blank}"))
+
+    def test_other_serial_forms_accepted(self):
+        cfg = self._load(GOOD.replace("192.168.240.112:5555", "emulator-5554"))
+        self.assertEqual(cfg.device.serial, "emulator-5554")
+
+
+class RootIgnore(unittest.TestCase):  # Ruling 40
+    def test_daily_yaml_is_ignored(self):
+        root = Path(__file__).resolve().parent.parent / ".gitignore"
+        self.assertIn("sidecar/daily.yaml", root.read_text().splitlines())
+
+
 class CommissionBotSerial(unittest.TestCase):
     def _daily(self, text):
         d = Path(tempfile.mkdtemp())

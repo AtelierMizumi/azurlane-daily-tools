@@ -8,5 +8,6 @@ sidecar/runs/
 **/__pycache__/
 sidecar/watchdog.yaml
 sidecar/watchdog.log
+sidecar/daily.yaml
 # Local Claude settings
 .claude/

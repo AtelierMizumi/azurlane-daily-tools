@@ -70,7 +70,7 @@ uv run python azurlane_daily.py --e2e     # chạy đầy đủ, in báo cáo PA
 uv run python azurlane_daily.py --apply   # như --e2e, và cho phép sửa config ALAS
 ```
 
-**Cảnh báo:** `--apply` ghi `AzurLaneAutoScript/config/alas.json` và tạo bản sao lưu `alas.json.bak` trước khi ghi. Chỉ chạy khi ALAS đã dừng.
+**Cảnh báo:** `--apply` có thể ghi `AzurLaneAutoScript/config/alas.json` và `AzurLaneAutoScript/config/deploy.yaml` (đặt `Run: ["alas"]` để container tự chạy instance `alas`), mỗi file có bản sao lưu `.bak` tạo trước khi ghi. Chỉ chạy khi ALAS đã dừng. Preflight kiểm tra độ phân giải qua adb của container sau `docker start`, nên `--check` bỏ qua bước này khi container đang dừng.
 
 - Chỉ hỗ trợ `device.profile: waydroid`; profile phone chưa được hỗ trợ.
 - `daily.yaml` nằm trong `sidecar/` và là bắt buộc với `azurlane_daily.py` (thiếu file sẽ báo `FAIL daily config`). Tạo bằng cách sao chép `sidecar/daily.example.yaml` thành `sidecar/daily.yaml` rồi chỉnh giá trị.
