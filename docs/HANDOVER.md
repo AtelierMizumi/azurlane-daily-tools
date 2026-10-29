@@ -139,7 +139,7 @@ Người dùng yêu cầu thêm các automation sau. Đây là nhiều sub-proje
 - **P4. Tierlist:** chọn đội theo tướng meta trên trang tierlist. Cần quyết định nguồn dữ liệu: snapshot cố định hay lấy trực tiếp.
 - **P5. PvP an toàn:** chỉ chọn đối thủ thắng được, so sánh fleet power và meta. ALAS `Exercise_OpponentChooseMode` có `max_exp`, `easiest`, `leftmost`, `easiest_else_exp`, không có chế độ theo sức mạnh. Cần OCR đọc sức mạnh đối thủ. Rủi ro mất tàu cao nhất.
 - **P6. Operation Siren:** handover tự động, chọn map theo khả năng, ưu tiên map có hộp stamina. ALAS có `OpsiAshBeacon`, `OpsiFleet`, `OpsiHazard1Leveling`.
-- **P7. Akashi và đổi xu:** đổi đồ tự động, đổi xu hằng tháng. Chưa tìm thấy khóa cấu hình "Akashi" trong ALAS, cần kiểm tra thêm.
+- **P7. Akashi và đổi xu (giải mã xong 2026-10-30):** "Akashi" của người dùng = **wandering merchant trong Operation Siren**, không phải shop thường. ALAS có sẵn `OpsiShop` (mua đồ OpSi, gồm wandering merchant) và `OpsiVoucher` (đổi xu hằng tháng) → P7 chỉ là **bật config khi người dùng muốn**, không cần phát triển. Shop thường (coin/merit/gold) giữ tắt — người dùng không muốn ALAS mua ở đó.
 - **P-Doc. Hướng dẫn người dùng** (yêu cầu 2026-10-29): guide tiếng Việt theo chất lượng hướng dẫn cộng đồng — mỗi automation làm gì, quy trình daily, troubleshooting, FAQ. Bản nháp: `docs/HUONG-DAN.md`, chờ duyệt rồi commit; cập nhật theo từng tính năng mới.
 
 **Quyết định kiến trúc đã chốt 2026-10-29: C** (trình bày ba phương án cho người dùng duyệt).
