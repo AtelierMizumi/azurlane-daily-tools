@@ -134,13 +134,9 @@ Người dùng yêu cầu thêm các automation sau. Đây là nhiều sub-proje
 - **P5. PvP an toàn:** chỉ chọn đối thủ thắng được, so sánh fleet power và meta. ALAS `Exercise_OpponentChooseMode` có `max_exp`, `easiest`, `leftmost`, `easiest_else_exp`, không có chế độ theo sức mạnh. Cần OCR đọc sức mạnh đối thủ. Rủi ro mất tàu cao nhất.
 - **P6. Operation Siren:** handover tự động, chọn map theo khả năng, ưu tiên map có hộp stamina. ALAS có `OpsiAshBeacon`, `OpsiFleet`, `OpsiHazard1Leveling`.
 - **P7. Akashi và đổi xu:** đổi đồ tự động, đổi xu hằng tháng. Chưa tìm thấy khóa cấu hình "Akashi" trong ALAS, cần kiểm tra thêm.
+- **P-Doc. Hướng dẫn người dùng** (yêu cầu 2026-10-29): guide tiếng Việt theo chất lượng hướng dẫn cộng đồng — mỗi automation làm gì, quy trình daily, troubleshooting, FAQ. Bản nháp: `docs/HUONG-DAN.md`, chờ duyệt rồi commit; cập nhật theo từng tính năng mới.
 
-**Quyết định kiến trúc chưa chốt:**
-- **A.** Fork ALAS (nhánh riêng, sửa module, rebase theo upstream). Đủ tính năng nhất, tốn bảo trì.
-- **B.** Chỉ cấu hình ALAS. Không sửa upstream, nhưng nhiều tính năng P2–P7 không tự động được.
-- **C.** Lai: sidecar sinh cấu hình cho P0, P1, P3; fork có chọn lọc cho P2, P4–P7.
-
-Khuyến nghị: **C**, và làm P0 trước.
+**Quyết định kiến trúc đã chốt 2026-10-29: C** (trình bày ba phương án cho người dùng duyệt).
 
 Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiển. ALAS là bộ lập lịch duy nhất. Không chạy nhiều bot song song.
 
@@ -166,6 +162,7 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 - Mỗi lần ALAS shutdown (`docker stop`) đều ghi lại `config/alas.json` bằng root qua bind mount (xác nhận thật 2 lần: 22:40:33, 22:51:59). `deploy.yaml` ALAS không đụng nên giữ quyền user. **Trước mỗi lần cần `--apply`, chown lại `alas.json`.**
 - `daily.yaml` git-ignored, không theo merge. Chạy orchestrator từ checkout nào thì checkout đó phải có `sidecar/daily.yaml` (sao chép từ worktree nếu cần).
 - ALAS in `App is already running, goto main page` (alas.py:177) khi game còn sống — parser đã tính đây là app started + login ok. Đường `App start`/`Login success` (game chết, restart thật) chưa từng chạy qua thật.
+- Task `Reward` của ALAS là claimer có sẵn cho màn Missions ("Collect ALL", `module/reward/reward.py:309`) với chu kỳ 120–240 phút — lần chạy daily đầu sau khi bật có thể chưa tới hạn của nó (đã gặp thật: window 22:51–22:52, NextRun Reward 23:49). Orchestrator ghi chú trạng thái ở stage `next run` (`mission_claim_note`); từ lần chạy daily thứ hai trở đi NextRun của Reward luôn đã quá hạn nên claim chạy trong window. `--apply` đảm bảo `Reward.Scheduler.Enable` và `Reward.Reward.CollectMission` (thêm vào REQUIRED).
 - Sandbox không kết nối được Waydroid, docker hay adb trên máy người dùng. Mọi kiểm tra thiết bị phải do người dùng chạy.
 - Lệnh `sed`/`grep` với biến và nhiều bước bị guard từ chối trong session worktree. Tách thành các lệnh đơn giản, dùng đường dẫn tuyệt đối.
 
@@ -176,3 +173,4 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 3. ~~Chốt A/B/C.~~ **Đã chốt C (2026-10-29).** Đang viết spec cho P0 (phần còn lại) và P1, chờ duyệt rồi lập kế hoạch.
 4. Kiểm tra `Commission` trong ALAS (`commission.py`) để xác định đường hủy commission (P1). **Đã kiểm tra sơ bộ:** ALAS không có logic hủy; hook point là `_commission_choose` khi `running_count >= max_commission`; game cho hủy commission đang chạy (mất dầu, không nhận thưởng); pattern hủy tham khảo `module/island/order.py` `reject_order()`. Chi tiết trong spec P1.
 5. Với P5 (PvP), cần kiểm tra OCR đọc sức mạnh đối thủ trước khi thiết kế. **Đã kiểm tra:** `module/exercise/opponent.py` đã OCR sẵn power + level của cả 4 đối thủ; P5 khả năng chỉ cần config (`easiest` + `Exercise_LowHpThreshold`), gần như không cần patch.
+6. Duyệt spec `docs/superpowers/specs/2026-10-29-p0-nextrun-p1-commission-gem.md` (đã chốt: chỉ hủy vì gem; thứ tự giá trị nạn nhân) và bản nháp guide `docs/HUONG-DAN.md`, rồi lập plan P0-phần-còn-lại + P1. Hai câu hỏi mở còn lại: ai làm explore hủy (user tay + agent chụp, hay agent toàn quyền), `Commission.CustomFilter` để GUI hay để `--apply`.
