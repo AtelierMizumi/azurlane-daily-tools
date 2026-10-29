@@ -58,3 +58,19 @@ cd sidecar && uv run watchdog.py
 - Sau freeze/thaw, kết nối adb cũ chết ngầm — phải `adb disconnect` + `connect` lại. Watchdog sidecar phụ trách cả hai (keep-alive + reconnect).
 - Container adb của ALAS chiếm port 5037 của host (do `network_mode: host`); kill adb host trước khi chạy ALAS. Cần adb từ host: dùng `docker exec alas adb ...` để không đụng độ.
 - adb Waydroid yêu cầu RSA auth — key host đã được xác thực, container dùng chung key qua mount trong `docker-compose.override.yml` (thêm adbkey của bạn nếu đổi máy).
+
+## Daily orchestrator (Waydroid)
+
+Chạy một lượt daily Azur Lane trên Waydroid qua ALAS: preflight, chạy Commission, rồi báo cáo PASS/FAIL theo từng bước.
+
+```sh
+cd sidecar
+uv run python azurlane_daily.py --check   # preflight + kiểm tra config ALAS, không khởi động container
+uv run python azurlane_daily.py --e2e     # chạy đầy đủ, in báo cáo PASS/FAIL theo từng bước
+uv run python azurlane_daily.py --apply   # như --e2e, và cho phép sửa config ALAS
+```
+
+**Cảnh báo:** `--apply` ghi `AzurLaneAutoScript/config/alas.json` và tạo bản sao lưu `alas.json.bak` trước khi ghi. Chỉ chạy khi ALAS đã dừng.
+
+- Chỉ hỗ trợ `device.profile: waydroid`; profile phone chưa được hỗ trợ.
+- `daily.yaml` nằm trong `sidecar/` và là bắt buộc với `azurlane_daily.py` (thiếu file sẽ báo `FAIL daily config`). Tạo bằng cách sao chép `sidecar/daily.example.yaml` thành `sidecar/daily.yaml` rồi chỉnh giá trị.
