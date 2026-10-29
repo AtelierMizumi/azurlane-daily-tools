@@ -37,32 +37,52 @@ class _LogTail:
     def __init__(self, log_dir: Path):
         self.log_dir = Path(log_dir)
         self.offsets: dict[str, int] = {}
-        # Files we could not stat at snapshot time existed before the run; their
+        # Files that could not be snapshotted existed before the run; their
         # content is unknown, so they are never fed to the parser (Ruling 11).
         self.ignored: set[str] = set()
-        for p in self._files():
-            try:
-                self.offsets[p.name] = p.stat().st_size
-            except OSError:  # vanished or unreadable between glob and stat
-                self.ignored.add(p.name)
+        # True when the directory could not even be listed at snapshot time.
+        self.snapshot_pending = False
+        self._take_snapshot()
 
-    def _files(self) -> list[Path]:
+    def _list(self, snapshot: bool) -> list[Path] | None:
+        """List `*.txt` files; None if the directory cannot be listed.
+
+        While snapshotting, a file whose is_file() fails is added to `ignored`.
+        """
         try:
             candidates = sorted(self.log_dir.glob("*.txt"))
         except OSError:
-            return []
+            return None
         files: list[Path] = []
         for p in candidates:
             try:
                 if p.is_file():
                     files.append(p)
             except OSError:  # e.g. PermissionError from stat
-                continue
+                if snapshot:
+                    self.ignored.add(p.name)
         return files
+
+    def _take_snapshot(self) -> None:
+        files = self._list(snapshot=True)
+        if files is None:
+            self.snapshot_pending = True  # redo at the first successful listing
+            return
+        self.snapshot_pending = False
+        for p in files:
+            try:
+                self.offsets[p.name] = p.stat().st_size
+            except OSError:  # vanished or unreadable between glob and stat
+                self.ignored.add(p.name)
 
     def read_new(self) -> list[str]:
         lines: list[str] = []
-        for p in self._files():
+        if self.snapshot_pending:
+            # The start-time listing failed: treat whatever exists now as
+            # pre-existing rather than replaying old lines.
+            self._take_snapshot()
+            return lines
+        for p in self._list(snapshot=False) or []:
             if p.name in self.ignored:
                 continue
             offset = self.offsets.get(p.name, 0)

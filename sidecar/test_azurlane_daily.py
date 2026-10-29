@@ -232,7 +232,7 @@ class Orchestrator(unittest.TestCase):
         log_dir = Path(d)
         # glob lists the file, but it is gone by the time the snapshot stats it
         gone = log_dir / "gone.txt"
-        with mock.patch("azurlane_daily._LogTail._files", lambda self: [gone]):
+        with mock.patch("azurlane_daily._LogTail._list", lambda self, snapshot: [gone]):
             runner = FakeRunner(STOPPED)
             clock = Clock()
             out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
@@ -240,6 +240,48 @@ class Orchestrator(unittest.TestCase):
         self.assertIsInstance(out, dict)
         self.assertEqual(out["result"], "timeout")
         self.assertTrue(any(c[:2] == ["docker", "stop"] for c in runner.calls))
+
+    def test_file_failing_is_file_at_snapshot_is_never_read_later(self):
+        d = tempfile.mkdtemp()
+        log_dir = Path(d)
+        (log_dir / "late.txt").write_text(f"App start\n{DONE}\n")  # pre-existing content
+        real_is_file = Path.is_file
+        failed = []
+
+        def flaky_is_file(self, *a, **kw):
+            if self.name == "late.txt" and not failed:  # fails on the first call (snapshot) only
+                failed.append(1)
+                raise PermissionError("denied")
+            return real_is_file(self, *a, **kw)
+
+        runner = FakeRunner(STOPPED)
+        clock = Clock()
+        with mock.patch.object(Path, "is_file", flaky_is_file):
+            out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
+                            alas_json(d, GOOD_ALAS), log_dir)
+        self.assertTrue(failed)
+        self.assertNotEqual(out["result"], "success")
+        self.assertEqual(out["result"], "timeout")
+        self.assertTrue(any(c[:2] == ["docker", "stop"] for c in runner.calls))
+
+    def test_unlistable_dir_at_snapshot_does_not_replay_old_lines(self):
+        d = tempfile.mkdtemp()
+        log_dir = Path(d)
+        (log_dir / "old.txt").write_text(f"{DONE}\n")  # pre-existing content
+        real_glob = Path.glob
+        calls = []
+
+        def flaky_glob(self, *a, **kw):
+            if self == log_dir and not calls:  # first listing (snapshot) fails
+                calls.append(1)
+                raise PermissionError("denied")
+            return real_glob(self, *a, **kw)
+
+        clock = Clock()
+        with mock.patch.object(Path, "glob", flaky_glob):
+            out = run_daily(make_cfg(), FakeRunner(STOPPED), lambda u: 200, clock,
+                            lambda s: clock.advance(s), alas_json(d, GOOD_ALAS), log_dir)
+        self.assertEqual(out["result"], "timeout")
 
 
 if __name__ == "__main__":
