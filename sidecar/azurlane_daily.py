@@ -265,14 +265,21 @@ def _run_core(
                               ("commission done", state.commission_done)):
             stages.append((name, reached, "seen in log" if reached else NOT_REACHED))
 
-        if state.commission_done and not state.errors:
-            result = "success"
-            detail = "Commission finished"
-        elif state.errors:
+        # Ruling 46: success needs the commission scan to have started AND the task
+        # to have ended AND no errors. "End task" alone is logged even when ALAS
+        # only queued a Restart because the game was not running.
+        if state.errors:
             result = "alas_error"
             detail = "; ".join(state.errors[:3])
             if state.commission_done:
                 detail = "Commission ended with errors: " + detail
+        elif state.commission_done and state.commission_started:
+            result = "success"
+            detail = "Commission finished"
+        elif state.commission_done:
+            result = "no_commission"
+            detail = ("Commission ended without starting its commission scan "
+                      "(game not running?)")
         else:
             result = "timeout"
             detail = f"Commission not finished within {cfg.run_minutes} min"

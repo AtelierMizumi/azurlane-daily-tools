@@ -792,6 +792,53 @@ class E2eStages(unittest.TestCase):  # Ruling 35
             self.assertEqual(canon[name][2], "not reached")
 
 
+class NoCommissionIsNotSuccess(unittest.TestCase):  # Ruling 46
+    # The COMMISSION fragment of a real ALAS log: the game was not running, ALAS queued
+    # a Restart and ended the task without ever scanning commissions.
+    SCREENSHOT = ["2026-10-29 20:01:02.123 | WARNING | Game not running",
+                  "2026-10-29 20:01:02.456 | INFO | Task call: Restart",
+                  "2026-10-29 20:01:03.789 | INFO | " + DONE]
+
+    def test_end_without_commission_detect_is_not_success(self):
+        out = go(make_world(), FakeRunner(STOPPED), lines=self.SCREENSHOT)
+        self.assertNotEqual(out["result"], "success")
+        self.assertEqual(out["result"], "no_commission")
+        stage = [s for s in out["stages"] if s[0] == "commission"][0]
+        self.assertFalse(stage[1])
+        self.assertEqual(stage[2], "Commission ended without starting its commission scan "
+                                   "(game not running?)")
+        canon = {s[0]: s for s in out["stages"]}
+        self.assertTrue(canon["commission done"][1])
+        self.assertEqual(canon["commission started"][:2], ("commission started", False))
+        self.assertTrue(calls_of_stop(out))
+
+    def test_no_commission_still_stops_container_and_exits_1(self):
+        from azurlane_daily import exit_code_for
+        r = FakeRunner(STOPPED)
+        out = go(make_world(), r, lines=self.SCREENSHOT)
+        self.assertTrue(calls_of(r, ["docker", "stop"]))
+        self.assertEqual(exit_code_for(out), 1)
+
+    def test_errors_take_precedence_over_no_commission(self):
+        out = go(make_world(), FakeRunner(STOPPED),
+                 lines=["GameNotRunningError: boom", DONE])
+        self.assertEqual(out["result"], "alas_error")
+
+    def test_detect_plus_end_without_errors_is_success(self):
+        out = go(make_world(), FakeRunner(STOPPED), lines=["Commission detect", DONE])
+        self.assertEqual(out["result"], "success")
+        stage = [s for s in out["stages"] if s[0] == "commission"][0]
+        self.assertTrue(stage[1])
+
+    def test_detect_without_end_is_still_timeout(self):
+        out = go(make_world(), FakeRunner(STOPPED), lines=["Commission detect"])
+        self.assertEqual(out["result"], "timeout")
+
+
+def calls_of_stop(out):
+    return [s for s in out["stages"] if s[0] == "docker stop" and s[1]]
+
+
 class Summary(unittest.TestCase):  # Ruling 34
     def _summary(self, runs):
         dirs = [p for p in runs.iterdir() if p.is_dir()]
