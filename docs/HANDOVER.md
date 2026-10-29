@@ -28,7 +28,9 @@ Mở rộng sau đó (chưa làm): tự động PvP an toàn, commission ưu ti�
 
 ## 3. Lệnh
 
-Tất cả lệnh chạy trong `<worktree>/sidecar`:
+Từ gốc dự án, entry point thống nhất là `./azdaily <command>` (`init|check|run|apply|report|bot|watchdog|test`, thêm `--version`; wrapper bash gọi `sidecar/azdaily.py` qua `uv run`). `./install.sh` cài dependencies + tạo `daily.yaml` nếu thiếu + chạy `./azdaily test`. CI: `.github/workflows/ci.yml` chạy `azdaily test` trên mỗi push.
+
+Các lệnh gốc bên dưới vẫn chạy trong `<worktree>/sidecar`:
 
 ```fish
 # Test (không cần thiết bị)
@@ -52,6 +54,8 @@ uv run python alas_report.py --log ~/Projects/Tools/azurlane-daily-tools/AzurLan
 Trạng thái khi bàn giao: 202 unit test pass, state machine PASS, selftest exit 0.
 
 Cập nhật 2026-10-29 tối: **e2e thật đã PASS** — `--e2e --apply` kết thúc `RESULT: success`, exit 0, ~77 giây (container stopped → apply config → docker start → ALAS chạy Commission → stop sạch), summary tại `sidecar/runs/20261029-225222/summary.json`. Sau fix marker "App is already running" thì 204 unit test pass (parser đã được validate trên log thật của run).
+
+Cập nhật 2026-10-29 đêm (đóng gói v0.2.0): entry point `./azdaily` + `install.sh` + CI; thêm khóa Reward (claim mission) vào REQUIRED + `mission_claim_note`; **221 unit test pass**, state machine PASS, selftest exit 0.
 
 ## 4. Những gì đã làm (theo commit)
 

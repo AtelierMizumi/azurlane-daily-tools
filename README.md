@@ -2,6 +2,22 @@
 
 Tool tự động hoá daily Azur Lane chạy trên Waydroid (Arch Linux + Wayland/niri), đứng trên vai [ALAS (AzurLaneAutoScript)](https://github.com/LmeSzinc/AzurLaneAutoScript).
 
+## Cài đặt & chạy nhanh
+
+Yêu cầu sẵn có trên máy: Docker (đã dựng container ALAS theo phần Kiến trúc bên dưới), Waydroid ghim 1280x720, và [uv](https://docs.astral.sh/uv/).
+
+```sh
+./install.sh          # cài dependencies, tạo sidecar/daily.yaml nếu thiếu, chạy test offline
+./azdaily init        # (tự chạy trong install.sh) tạo config từ daily.example.yaml
+./azdaily check       # soát an toàn: preflight + config ALAS, không bật container
+./azdaily run         # chạy một lượt daily, báo PASS/FAIL theo từng stage
+./azdaily apply       # như run, và cho phép ghi config ALAS (container phải đang dừng)
+./azdaily report      # báo cáo lịch ALAS từ log mới nhất
+./azdaily test        # toàn bộ test offline (unit + state machine + bot selftest)
+```
+
+Lệnh `./azdaily` là entry point thống nhất; gọi trực tiếp từng script (`uv run python azurlane_daily.py ...`) vẫn hoạt động như cũ. Hướng dẫn đầy đủ cho người dùng: [docs/HUONG-DAN.md](docs/HUONG-DAN.md).
+
 ## Kiến trúc
 
 ```

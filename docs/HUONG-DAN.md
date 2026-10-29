@@ -65,32 +65,39 @@ Tool cần mấy điều kiện sau. Lỗi nào thiếu sẽ bị `--check` ch�
 
 ## 4. Quy trình chạy daily
 
-Mở terminal vào thư mục tool:
+Mở terminal ở **gốc dự án** (`~/Projects/Tools/azurlane-daily-tools`). Mọi lệnh đi qua một cửa duy nhất: `./azdaily`.
+
+### Lần đầu tiên trên một máy mới
 
 ```fish
-cd ~/Projects/Tools/azurlane-daily-tools/sidecar
+./install.sh        # cài dependencies + tạo sidecar/daily.yaml nếu thiếu + chạy test
+./azdaily init      # (nếu bỏ qua install.sh) tạo daily.yaml từ daily.example.yaml
 ```
+
+Sửa `sidecar/daily.yaml`: điền `device.serial` của Waydroid và `alas.repo_dir`.
 
 ### Lần đầu tiên (hoặc sau khi đổi cấu hình ALAS)
 
 ```fish
-uv run python azurlane_daily.py --e2e --apply
+./azdaily apply
 ```
 
-Cờ `--apply` bảo tool tự sửa hai thứ trong cấu hình ALAS (có bản `.bak` dự phòng):
-bật `AutoRestart`, khai báo instance trong `Run`. Cần container đang dừng — đúng
-trình tự ở mục 3 là hợp lệ.
+Lệnh `apply` bảo tool tự sửa hai thứ trong cấu hình ALAS (có bản `.bak` dự phòng):
+bật `AutoRestart`, khai báo instance trong `Run`, và đảm bảo task **Reward**
+(claim mission) được bật. Cần container đang dừng — đúng trình tự ở mục 3 là hợp lệ.
 
 ### Các ngày bình thường
 
 ```fish
-uv run python azurlane_daily.py --check   # soát an toàn, không bật gì cả
-uv run python azurlane_daily.py --e2e     # chạy thật
+./azdaily check     # soát an toàn, không bật gì cả
+./azdaily run       # chạy thật
 ```
 
-`--check` PASS hết mới nên chạy `--e2e`. Trong lúc `--e2e` chạy (**tối đa
-60 phút**): đừng mở game, đừng đụng Waydroid. App khác chiếm màn hình là bot
-dừng an toàn.
+`check` PASS hết mới nên chạy `run`. Trong lúc `run` chạy (**tối đa 60 phút**):
+đừng mở game, đừng đụng Waydroid. App khác chiếm màn hình là bot dừng an toàn.
+
+> Gọi trực tiếp từng script (ví dụ `uv run python azurlane_daily.py --e2e` trong
+> `sidecar/`) vẫn hoạt động như cũ — `./azdaily` chỉ là cửa thống nhất phía trên.
 
 ### Kết quả đọc ở đâu?
 
@@ -141,16 +148,19 @@ dừng an toàn.
 ## 7. Các lệnh phụ
 
 ```fish
-# Báo cáo lịch: task nào chạy lúc nào, lần dậy kế tiếp
-uv run python alas_report.py --log ~/Projects/Tools/azurlane-daily-tools/AzurLaneAutoScript/log/2026-10-29_alas.txt
+# Báo cáo lịch: task nào chạy lúc nào, lần dậy kế tiếp (tự chọn log mới nhất)
+./azdaily report
 
 # Bot commission dự phòng (chạy tay, không cần ALAS)
-uv run python commission_bot.py --dry-run      # diễn tập, không bấm thật
-uv run python commission_bot.py --selftest     # kiểm tra nhận dạng ảnh
-uv run python commission_bot.py --replay runs/<thư-mục-ảnh-cũ>   # test trên ảnh cũ
+./azdaily bot --dry-run      # diễn tập, không bấm thật
+./azdaily bot --selftest     # kiểm tra nhận dạng ảnh
+./azdaily bot --replay runs/<thư-mục-ảnh-cũ>   # test trên ảnh cũ
 
 # Watchdog chạy nền (cần watchdog.yaml + ntfy topic)
-uv run python watchdog.py
+./azdaily watchdog
+
+# Toàn bộ test offline (dùng trước khi báo lỗi, hoặc sau khi kéo code mới)
+./azdaily test
 ```
 
 ---
@@ -189,6 +199,14 @@ giữ một phiên điều khiển là gây lỗi cho cả hai. Tắt hết rồ
 Mọi thứ chạy local: log, ảnh chụp, báo cáo đều nằm trong thư mục dự án.
 Cấu hình `ntfy_url` để trống thì không có gì rời khỏi máy. Repo không có
 remote, không có gì được tự động gửi đi.
+
+**Mua máy mới / chia sẻ cho bạn khác thì cài thế nào?**
+Máy mới cần: Docker + container ALAS (xem README), Waydroid ghim 1280x720,
+[uv](https://docs.astral.sh/uv/). Sau đó chỉ cần: clone/copy dự án →
+`./install.sh` (tự cài dependencies, tự tạo `daily.yaml`, tự chạy test) →
+sửa `device.serial` trong `sidecar/daily.yaml` → `./azdaily check`. Tool chạy
+hoàn toàn từ thư mục dự án, không cài gì vào hệ thống ngoài `.venv` do `uv`
+quản lý trong `sidecar/`.
 
 ---
 
