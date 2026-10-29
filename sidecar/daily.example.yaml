@@ -1,0 +1,17 @@
+# Cấu hình daily orchestrator. Sao chép thành daily.yaml rồi chỉnh lại.
+
+device:
+  profile: waydroid                 # Chỉ hỗ trợ "waydroid" (phone chưa có)
+  serial: 192.168.240.112:5555      # Địa chỉ ADB của thiết bị Waydroid (ip:port)
+  resolution: 1280x720              # Độ phân giải màn hình, dạng WxH
+
+alas:
+  container_name: alas              # Tên container Docker đang chạy ALAS
+  webui_url: http://127.0.0.1:22267 # URL WebUI của ALAS
+  repo_dir: ../AzurLaneAutoScript   # Thư mục repo ALAS (đường dẫn tương đối theo file config này)
+
+timeouts:
+  run_minutes: 60                   # Thời gian chạy tối đa mỗi lượt (phút), mặc định 60 nếu bỏ trống
+
+notify:
+  ntfy_url: null                    # URL topic ntfy để nhận thông báo; đặt null để tắt thông báo
