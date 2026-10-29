@@ -57,6 +57,8 @@ Cập nhật 2026-10-29 tối: **e2e thật đã PASS** — `--e2e --apply` kế
 
 Cập nhật 2026-10-29 đêm (đóng gói v0.2.0): entry point `./azdaily` + `install.sh` + CI; thêm khóa Reward (claim mission) vào REQUIRED + `mission_claim_note`; **221 unit test pass**, state machine PASS, selftest exit 0.
 
+Cập nhật 2026-10-30 (P-Dash): `./azdaily daemon` = web dashboard (port 22268) + always-on supervisor + watchdog in-process; orchestrator ghi `runs/latest-state.json` sau mỗi stage; spec `docs/superpowers/specs/2026-10-30-dashboard-daemon.md`. Commit `082233a`.
+
 ## 4. Những gì đã làm (theo commit)
 
 Branch `worktree-azur-final-fix`, từ `master`:

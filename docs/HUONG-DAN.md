@@ -65,6 +65,24 @@ Tool cần mấy điều kiện sau. Lỗi nào thiếu sẽ bị `--check` ch�
 
 ## 4. Quy trình chạy daily
 
+### Cách khuyến nghị: daemon + dashboard
+
+```fish
+./azdaily daemon
+```
+
+Một tiến trình duy nhất làm hết những việc này:
+
+- Mở **web dashboard** tại `http://127.0.0.1:22268` (tự mở browser khi chạy foreground) — xem live: pipeline đang tới stage nào, lịch ALAS (NextRun từng task + claim mission), lịch sử các lượt chạy, 50 dòng log cuối, trạng thái container/Waydroid/màn hình.
+- **Always-on**: daemon giữ container ALAS chạy suốt phiên máy — AL chạy gần như mọi lúc bạn bật máy, ALAS tự chạy mọi task theo lịch riêng của nó (đúng thiết kế 24/7 của ALAS).
+- **Watchdog chạy trong daemon**: canh container chết, WebUI tắt, log ngừng ghi, màn hình treo, giữ Waydroid không FROZEN — không cần chạy `watchdog.py` riêng nữa.
+- **Nút điều khiển trên web**: Start/Stop ALAS, Check / Run now / Apply+Run (pipeline một lượt có kiểm soát), Stop run.
+- Chạy nền thật (tự khởi động cùng máy): `cp sidecar/azdaily-daemon.service.example ~/.config/systemd/user/azdaily-daemon.service` rồi `systemctl --user daemon-reload && systemctl --user enable --now azdaily-daemon`.
+- Bảo mật: mặc định chỉ nghe `127.0.0.1:22268`. Muốn xem từ máy khác trong LAN: đặt `daemon.token` trong `daily.yaml` (hoặc `--token`) rồi `--host 0.0.0.0`.
+- Tinh chỉnh trong `daily.yaml` mục `daemon:`: `listen`, `token`, `always_on`, `run_at` (giờ tự chạy pipeline nếu tắt always-on), `watchdog`, `watchdog_interval`.
+
+### Chạy pipeline một lượt bằng lệnh
+
 Mở terminal ở **gốc dự án** (`~/Projects/Tools/azurlane-daily-tools`). Mọi lệnh đi qua một cửa duy nhất: `./azdaily`.
 
 ### Lần đầu tiên trên một máy mới

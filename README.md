@@ -9,6 +9,7 @@ Yêu cầu sẵn có trên máy: Docker (đã dựng container ALAS theo phần 
 ```sh
 ./install.sh          # cài dependencies, tạo sidecar/daily.yaml nếu thiếu, chạy test offline
 ./azdaily init        # (tự chạy trong install.sh) tạo config từ daily.example.yaml
+./azdaily daemon      # dashboard web (http://127.0.0.1:22268) + giữ ALAS chạy always-on
 ./azdaily check       # soát an toàn: preflight + config ALAS, không bật container
 ./azdaily run         # chạy một lượt daily, báo PASS/FAIL theo từng stage
 ./azdaily apply       # như run, và cho phép ghi config ALAS (container phải đang dừng)
