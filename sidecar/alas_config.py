@@ -15,9 +15,17 @@ from pathlib import Path
 # alas.json and each Function() reads "Scheduler.Enable" INSIDE that task
 # (module/config/config.py), so the key the Commission task needs is
 # Commission.Scheduler.Enable. There is no global top-level Scheduler key.
+#
+# The Reward task is ALAS's built-in claimer for the missions screen
+# (module/reward/reward.py:309 — reward_mission(daily=Reward_CollectMission,
+# weekly=Reward_CollectWeeklyMission), the in-game "Collect ALL"). Without an
+# enabled Reward task the orchestrator's daily run never claims mission
+# rewards, so both keys are required too.
 REQUIRED: dict[tuple[str, ...], object] = {
     ("GameManager", "AutoRestart"): True,
     ("Commission", "Scheduler", "Enable"): True,
+    ("Reward", "Scheduler", "Enable"): True,
+    ("Reward", "Reward", "CollectMission"): True,
 }
 
 _MISSING = object()
@@ -150,3 +158,30 @@ def commission_next_run_warning(data: dict, now: datetime | None = None) -> str 
         return None
     return (f"WARNING: NextRun {value} is in the future; ALAS will not start "
             f"Commission before then")
+
+
+def mission_claim_note(data: dict, now: datetime | None = None) -> str | None:
+    """A note about when the Reward task (mission claim) will run, or None.
+
+    Reward's SuccessInterval is 120-240 minutes, so at a daily orchestrator
+    window its NextRun is usually already past and the claim happens in the
+    window. Right after the task first comes due, though, NextRun can be
+    hours away and the claim slips to a later container start — worth telling
+    the user instead of letting them wonder why nothing was claimed.
+    """
+    if _get(data, ("Reward", "Scheduler", "Enable")) is not True:
+        return None  # REQUIRED above already reports this as a config problem
+    if _get(data, ("Reward", "Reward", "CollectMission")) is not True:
+        return None  # ditto
+    value = _get(data, ("Reward", "Scheduler", "NextRun"))
+    if not isinstance(value, str):
+        return None
+    try:
+        next_run = datetime.fromisoformat(value)
+        now = now or datetime.now()
+    except (ValueError, TypeError):
+        return None
+    if next_run <= now:
+        return "Reward task (mission claim) is due; ALAS will run it in this window"
+    return (f"Reward task (mission claim) NextRun {value} is in the future; "
+            f"missions will be claimed on a later container start")

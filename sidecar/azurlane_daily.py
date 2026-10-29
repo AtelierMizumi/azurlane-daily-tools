@@ -25,7 +25,8 @@ from typing import Callable
 import yaml
 
 from alas_config import (apply_alas_config, apply_deploy_run, check_alas_config,
-                         check_deploy_run, commission_next_run_warning, load_alas_config)
+                         check_deploy_run, commission_next_run_warning,
+                         load_alas_config, mission_claim_note)
 from daily_config import DailyConfig, load_daily_config
 from log_parser import RunState, parse_lines
 from preflight import Runner, SubprocessRunner, check_resolution, check_waydroid
@@ -452,8 +453,10 @@ def run_check(cfg: DailyConfig, runner: Runner, alas_config_path: Path,
         problems = check_alas_config(data, deploy_path)
         stages.append(("config", not problems, "; ".join(problems) or "ok"))
         warning = commission_next_run_warning(data)
-        if warning:  # Ruling 33: a warning, not a failure
-            stages.append(("next run", True, warning))
+        note = mission_claim_note(data)
+        detail = "; ".join(part for part in (warning, note) if part)
+        if detail:  # Ruling 33: a warning, not a failure
+            stages.append(("next run", True, detail))
     except (OSError, ValueError) as e:
         stages.append(("config", False, str(e)))
     return stages

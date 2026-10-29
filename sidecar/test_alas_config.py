@@ -3,9 +3,11 @@ import json, tempfile, unittest
 from pathlib import Path
 from datetime import datetime
 from alas_config import (check_alas_config, apply_alas_config, load_alas_config,
-                         check_deploy_run, apply_deploy_run, commission_next_run_warning, REQUIRED)
+                         check_deploy_run, apply_deploy_run, commission_next_run_warning,
+                         mission_claim_note, REQUIRED)
 
-GOOD = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}}}
+GOOD = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}},
+        "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
 
 class CheckConfig(unittest.TestCase):
     def test_good_passes(self):
@@ -19,7 +21,19 @@ class CheckConfig(unittest.TestCase):
         self.assertIn("Commission.Scheduler.Enable", problems[0])
 
     def test_missing_key_reported_not_crash(self):
-        self.assertEqual(len(check_alas_config({})), 2)
+        self.assertEqual(len(check_alas_config({})), len(REQUIRED))
+
+    def test_reward_disabled_or_not_collecting_reported(self):
+        bad = json.loads(json.dumps(GOOD))
+        bad["Reward"]["Scheduler"]["Enable"] = False
+        problems = check_alas_config(bad)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("Reward.Scheduler.Enable", problems[0])
+        bad = json.loads(json.dumps(GOOD))
+        bad["Reward"]["Reward"]["CollectMission"] = False
+        problems = check_alas_config(bad)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("Reward.Reward.CollectMission", problems[0])
 
 class ApplyConfig(unittest.TestCase):
     def test_apply_writes_and_backs_up(self):
@@ -176,6 +190,42 @@ class NextRunWarning(unittest.TestCase):  # Ruling 33
         self.assertIsNone(commission_next_run_warning(self._data("not a date"), self.NOW))
         self.assertIsNone(commission_next_run_warning({}, self.NOW))
         self.assertIsNone(commission_next_run_warning(self._data(12345), self.NOW))
+
+
+class MissionClaimNote(unittest.TestCase):
+    NOW = datetime(2026, 10, 29, 12, 0, 0)
+
+    def _data(self, next_run):
+        d = json.loads(json.dumps(GOOD))
+        if next_run is not None:
+            d["Reward"]["Scheduler"]["NextRun"] = next_run
+        return d
+
+    def test_due_runs_in_this_window(self):
+        # The daily window usually finds Reward already past its 120-240 min
+        # cadence, so the claim happens in the window.
+        note = mission_claim_note(self._data("2026-10-29 11:00:00"), self.NOW)
+        self.assertIn("is due", note)
+
+    def test_future_slips_to_later_start(self):
+        note = mission_claim_note(self._data("2026-10-29 23:49:39"), self.NOW)
+        self.assertIn("2026-10-29 23:49:39", note)
+        self.assertIn("later container start", note)
+
+    def test_disabled_gives_none(self):
+        d = self._data("2026-10-29 23:49:39")
+        d["Reward"]["Scheduler"]["Enable"] = False
+        self.assertIsNone(mission_claim_note(d, self.NOW))
+
+    def test_not_collecting_gives_none(self):
+        d = self._data("2026-10-29 23:49:39")
+        d["Reward"]["Reward"]["CollectMission"] = False
+        self.assertIsNone(mission_claim_note(d, self.NOW))
+
+    def test_missing_or_garbage_gives_none(self):
+        self.assertIsNone(mission_claim_note(self._data(None), self.NOW))
+        self.assertIsNone(mission_claim_note(self._data("not a date"), self.NOW))
+        self.assertIsNone(mission_claim_note({}, self.NOW))
 
 
 if __name__ == "__main__":

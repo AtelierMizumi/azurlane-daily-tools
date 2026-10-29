@@ -46,8 +46,10 @@ def make_cfg():
         alas_container="alas", alas_webui_url="http://x",
         alas_repo_dir=Path("."), run_minutes=1, ntfy_url=None)
 
-GOOD_ALAS = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}}}
-BAD_ALAS = {"GameManager": {"AutoRestart": False}, "Commission": {"Scheduler": {"Enable": True}}}
+GOOD_ALAS = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}},
+             "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
+BAD_ALAS = {"GameManager": {"AutoRestart": False}, "Commission": {"Scheduler": {"Enable": True}},
+            "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
 
 # Container stopped before start (check_waydroid only checks inspect's exit code).
 STOPPED = {**OK, "inspect": (0, "false"), "docker start": (0, "alas"), "docker stop": (0, "alas")}
