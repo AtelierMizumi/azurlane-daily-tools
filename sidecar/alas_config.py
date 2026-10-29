@@ -21,8 +21,13 @@ from pathlib import Path
 # weekly=Reward_CollectWeeklyMission), the in-game "Collect ALL"). Without an
 # enabled Reward task the orchestrator's daily run never claims mission
 # rewards, so both keys are required too.
+#
+# GameManager.AutoRestart is a group-level argument, so ALAS nests it under a
+# doubled group name (config_generated.py: GameManager_AutoRestart) — one
+# level deeper than the argument.yaml listing suggests. Verified against a
+# real alas.json rewritten by ALAS: the one-level path is dropped on save.
 REQUIRED: dict[tuple[str, ...], object] = {
-    ("GameManager", "AutoRestart"): True,
+    ("GameManager", "GameManager", "AutoRestart"): True,
     ("Commission", "Scheduler", "Enable"): True,
     ("Reward", "Scheduler", "Enable"): True,
     ("Reward", "Reward", "CollectMission"): True,

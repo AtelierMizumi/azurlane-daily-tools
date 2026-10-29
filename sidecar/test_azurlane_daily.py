@@ -46,9 +46,9 @@ def make_cfg():
         alas_container="alas", alas_webui_url="http://x",
         alas_repo_dir=Path("."), run_minutes=1, ntfy_url=None)
 
-GOOD_ALAS = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}},
+GOOD_ALAS = {"GameManager": {"GameManager": {"AutoRestart": True}}, "Commission": {"Scheduler": {"Enable": True}},
              "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
-BAD_ALAS = {"GameManager": {"AutoRestart": False}, "Commission": {"Scheduler": {"Enable": True}},
+BAD_ALAS = {"GameManager": {"GameManager": {"AutoRestart": False}}, "Commission": {"Scheduler": {"Enable": True}},
             "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
 
 # Container stopped before start (check_waydroid only checks inspect's exit code).
@@ -168,7 +168,7 @@ class Orchestrator(unittest.TestCase):
         out = run_daily(make_cfg(), SnapshotRunner(STOPPED), lambda u: 200, clock,
                         lambda s: clock.advance(s), cfg_path, Path(d), apply=True)
         self.assertEqual(out["result"], "timeout")
-        self.assertTrue(seen["at_start"]["GameManager"]["AutoRestart"])
+        self.assertTrue(seen["at_start"]["GameManager"]["GameManager"]["AutoRestart"])
 
     def test_bad_config_without_apply_is_config_failed(self):
         d = tempfile.mkdtemp()
@@ -184,7 +184,7 @@ class Orchestrator(unittest.TestCase):
         out = run_daily(make_cfg(), FakeRunner({**OK, "inspect": (0, "true")}), lambda u: 200,
                         Clock(), lambda s: None, cfg_path, Path(d), apply=True)
         self.assertEqual(out["result"], "already_running")
-        self.assertFalse(json.loads(cfg_path.read_text())["GameManager"]["AutoRestart"])
+        self.assertFalse(json.loads(cfg_path.read_text())["GameManager"]["GameManager"]["AutoRestart"])
         self.assertFalse((Path(d) / "alas.json.bak").exists())
 
     def _stage(self, out, name):
@@ -654,7 +654,7 @@ class RunningContainerAdbProbe(unittest.TestCase):  # I1
 
 class MalformedAlasJson(unittest.TestCase):  # Minor 1
     def test_apply_with_non_dict_intermediate_is_config_failed(self):
-        w = make_world(alas={"GameManager": {"AutoRestart": False}, "Commission": None})
+        w = make_world(alas={"GameManager": {"GameManager": {"AutoRestart": False}}, "Commission": None})
         r = FakeRunner(STOPPED)
         out = go(w, r, apply=True)
         self.assertEqual(out["result"], "config_failed")

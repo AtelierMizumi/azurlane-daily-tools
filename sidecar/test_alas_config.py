@@ -6,7 +6,7 @@ from alas_config import (check_alas_config, apply_alas_config, load_alas_config,
                          check_deploy_run, apply_deploy_run, commission_next_run_warning,
                          mission_claim_note, REQUIRED)
 
-GOOD = {"GameManager": {"AutoRestart": True}, "Commission": {"Scheduler": {"Enable": True}},
+GOOD = {"GameManager": {"GameManager": {"AutoRestart": True}}, "Commission": {"Scheduler": {"Enable": True}},
         "Reward": {"Scheduler": {"Enable": True}, "Reward": {"CollectMission": True}}}
 
 class CheckConfig(unittest.TestCase):
@@ -39,10 +39,10 @@ class ApplyConfig(unittest.TestCase):
     def test_apply_writes_and_backs_up(self):
         d = Path(tempfile.mkdtemp())
         p = d / "alas.json"
-        p.write_text(json.dumps({"GameManager": {"AutoRestart": False}}))
+        p.write_text(json.dumps({"GameManager": {"GameManager": {"AutoRestart": False}}}))
         backup = apply_alas_config(p)
         self.assertTrue(backup.exists())
-        self.assertEqual(json.loads(backup.read_text())["GameManager"]["AutoRestart"], False)
+        self.assertEqual(json.loads(backup.read_text())["GameManager"]["GameManager"]["AutoRestart"], False)
         self.assertEqual(check_alas_config(json.loads(p.read_text())), [])
 
     def test_missing_file_message(self):
