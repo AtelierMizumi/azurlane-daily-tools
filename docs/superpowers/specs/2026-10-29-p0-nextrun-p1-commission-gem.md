@@ -1,8 +1,6 @@
 # P0 phần còn lại + P1: NextRun timing và commission gem-first
 
-Trạng thái: **Bản nháp, chờ bạn duyệt.** Chưa implement. Chưa lập kế hoạch.
-
-Kiến trúc đã chốt: **C (lai)** — sidecar + config ALAS là chính, không fork trừ khi bắt buộc.
+Trạng thái: **Đã chốt điều hướng 2026-10-30, chờ lập kế hoạch.** P0-A có thể triển khai ngay; P1 chờ explore UI hủy.
 
 ## 1. Bối cảnh
 
@@ -13,6 +11,17 @@ Kiến trúc đã chốt: **C (lai)** — sidecar + config ALAS là chính, khô
   - ALAS có filter gem-first (`Commission.CustomFilter`) nhưng **không có bất kỳ logic hủy nào** — grep toàn `module/commission` = 0 match; `RewardCommission._commission_choose` (commission.py:172) chỉ bỏ qua khi `running_count >= max_commission`.
   - Game **cho phép hủy commission đang chạy**: mất dầu đã tiêu, không nhận thưởng, tàu về ngay (AL Wiki — Commissions).
   - Pattern hủy có sẵn trong ALAS để tham khảo UI: `module/island/order.py` `reject_order()` — template + `appear_then_click` + confirm.
+
+Kiến trúc chốt: **C (lai)** — sidecar + config ALAS là chính. Ràng buộc thêm từ người dùng (2026-10-30): **không can thiệp sâu vào logic ALAS** — nó đã được nghiên cứu và refine từ trước; mọi tính năng mới ưu tiên (1) config ALAS, (2) sidecar, fork chỉ khi bất khả kháng.
+
+### 1b. Đối chiếu hệ sinh thái fork ALAS (2026-10-30) — vì sao không fork
+
+Đã kiểm tra bằng GitHub API (repo public, số liệu ngày 2026-10-30):
+
+- **Upstream `LmeSzinc/AzurLaneAutoScript`**: pushed 2026-10-28, vẫn merge bug_fix PR thường xuyên (#6070–#6086 trong tuần cuối 10/2026) — **core reward modules (surface ta phụ thuộc: login/device, commission, reward/mission, dorm, meowfficer, guild, tactical, research) vẫn được maintain**.
+- **`foxwhite25/AzurLaneAutoScriptThatWorks`** (fork được nhắc trong handover): commit cuối 2024-08, chỉ là fork cộng dồn event assets/War Archives — **đã chết hơn 2 năm, không có giá trị tham chiếu**.
+- **`guoh064/AzurLaneAutoScript`** (fork cộng đồng sống nhất, 37 sao, desc "từ bỏ hy vọng vào lme"): commit 2026-10-27 tập trung vào **island transport/collect, shop info-bar, minigame, supply pack** — **không module nào trùng với đường chạy daily của ta**; đồng thời nó merge upstream liên tục, chứng tỏ thượng nguồn vẫn sống.
+- Kết luận: **không có bằng chứng nào cho thấy phần ALAS ta dùng bị outdated**. Rủi ro thật của ta là template drift khi game đổi UI (đã có watchdog + ntfy + abort-safe), không phải abandonware. Giữ chạy ALAS stock; đánh giá lại chỉ khi upstream thực sự ngừng nhận bug_fix.
 
 ## 2. Phần A — P0: NextRun fail-fast
 
@@ -94,19 +103,27 @@ Không thêm config cho filter (để GUI). Watchdog và commission_bot không �
 - P2–P7, tự lên lịch cron cho orchestrator.
 - Hủy commission trong lúc ALAS đang chạy.
 
-## 8. Câu hỏi mở
+## 8. Quyết định đã chốt và câu hỏi còn mở
 
-Đã chốt theo phản hồi 2026-10-29: chỉ hủy khi có commission **gem** pending
-(không vì cube); thứ tự giá trị nạn nhân như mục 3.2 bước 5. Yêu cầu mới cùng
-ngày: **guide người dùng** (`docs/HUONG-DAN.md`) — bản nháp đã viết, chờ duyệt
-cấu trúc và giọng văn.
+Đã chốt (người dùng, 2026-10-29/30):
 
-1. **Explore hủy commission**: bạn tự hủy tay một lần trong khi agent chụp qua
-   adb (khuyến nghị), hay agent điều khiển toàn bộ khi thiết bị rảnh?
-2. **`Commission.CustomFilter`**: xác nhận để GUI tự quản (khuyến nghị), hay
-   muốn sidecar quản lý qua `--apply`?
-3. **`docs/HUONG-DAN.md`**: có phần nào cần thêm/sửa để đạt chất lượng guide
-   cộng đồng mà bạn mong muốn?
+1. Chỉ hủy khi có commission **gem** pending (không vì cube); thứ tự giá trị
+   nạn nhân như mục 3.2 bước 5.
+2. **Chọn mặc định cho 2 câu hỏi còn lại** (người dùng chưa phản bác — nếu muốn
+   đổi thì sửa lại mục này trước khi lập plan P1):
+   - Explore hủy commission: **người dùng hủy tay một lần, agent chụp qua adb**
+     (ít rủi ro cho tài khoản hơn agent điều khiển toàn bộ).
+   - `Commission.CustomFilter`: **để GUI của ALAS tự quản** — `--apply` không
+     đụng filter, tránh trượt tay ghi sai chuỗi ưu tiên.
+3. Không fork ALAS — chốt lại 2026-10-30 sau khi đối chiếu hệ sinh thái fork
+   (mục 1b): upstream vẫn maintain core modules; fork cộng đồng không chạm
+   vào surface ta dùng.
+4. Guide người dùng (`docs/HUONG-DAN.md`) đã có và được giữ cập nhật theo
+   từng tính năng; repo public tại
+   `https://github.com/AtelierMizumi/azurlane-daily-tools` (Apache-2.0).
+
+Cần trả lời trước khi lập plan P1: ngày giờ tiện cho phiên explore hủy
+commission (thiết bị rảnh, container dừng).
 
 ## 9. Tự kiểm tra spec
 

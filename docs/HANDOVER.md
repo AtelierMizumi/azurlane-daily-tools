@@ -148,7 +148,7 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 
 - Trả lời bằng tiếng Việt, ngắn gọn, đưa kết luận quan trọng xuống cuối.
 - Không thêm dòng attribution (Co-Authored-By) vào commit hay PR. Đây là yêu cầu hiện tại của người dùng.
-- Không commit hay push khi chưa được yêu cầu. Repo không có remote.
+- Không commit hay push khi chưa được yêu cầu. Remote public: `https://github.com/AtelierMizumi/azurlane-daily-tools` (tạo 2026-10-30, CI `ci.yml` chạy trên push — đã xanh).
 - Không sửa code upstream ALAS trong `AzurLaneAutoScript/` (spec mục 8). Ngoại lệ duy nhất: `--apply` ghi file config runtime, có `.bak`.
 - Test-first khi có test suite. Không sửa test để khớp code sai.
 - Không dùng `rm -rf` trên đường dẫn chưa kiểm tra.
@@ -174,7 +174,7 @@ Nguyên tắc điều phối: thiết bị chỉ có một phiên điều khiể
 
 1. ~~Người dùng dừng scheduler và container, hoàn thành mục 6, chạy `--check` rồi `--e2e`.~~ **Đã xong 2026-10-29, e2e PASS.**
 2. ~~Dựa trên kết quả e2e, sửa lỗi nếu có. Nếu PASS, chốt merge hoặc giữ branch.~~ **Đã merge `worktree-azur-final-fix` vào `master` (fast-forward), worktree giữ nguyên.**
-3. ~~Chốt A/B/C.~~ **Đã chốt C (2026-10-29).** Đang viết spec cho P0 (phần còn lại) và P1, chờ duyệt rồi lập kế hoạch.
+3. ~~Chốt A/B/C.~~ **Đã chốt C (2026-10-29).** Spec P0/P1 đã commit (`docs/superpowers/specs/2026-10-29-p0-nextrun-p1-commission-gem.md`), chốt lại điều hướng 2026-10-30 sau khi đối chiếu hệ sinh thái fork: upstream vẫn maintain core reward modules, fork cộng đồng (guoh064) chỉ chạm island/shop/minigame, fork "ThatWorks" (foxwhite25) chết từ 2024-08 → **không fork ALAS, không can thiệp sâu logic của nó** (ràng buộc người dùng 2026-10-30). Chờ: chọn ngày explore hủy commission để lập plan P1; P0-A (NextRun fail-fast) triển khai được ngay.
 4. Kiểm tra `Commission` trong ALAS (`commission.py`) để xác định đường hủy commission (P1). **Đã kiểm tra sơ bộ:** ALAS không có logic hủy; hook point là `_commission_choose` khi `running_count >= max_commission`; game cho hủy commission đang chạy (mất dầu, không nhận thưởng); pattern hủy tham khảo `module/island/order.py` `reject_order()`. Chi tiết trong spec P1.
 5. Với P5 (PvP), cần kiểm tra OCR đọc sức mạnh đối thủ trước khi thiết kế. **Đã kiểm tra:** `module/exercise/opponent.py` đã OCR sẵn power + level của cả 4 đối thủ; P5 khả năng chỉ cần config (`easiest` + `Exercise_LowHpThreshold`), gần như không cần patch.
 6. Duyệt spec `docs/superpowers/specs/2026-10-29-p0-nextrun-p1-commission-gem.md` (đã chốt: chỉ hủy vì gem; thứ tự giá trị nạn nhân) và bản nháp guide `docs/HUONG-DAN.md`, rồi lập plan P0-phần-còn-lại + P1. Hai câu hỏi mở còn lại: ai làm explore hủy (user tay + agent chụp, hay agent toàn quyền), `Commission.CustomFilter` để GUI hay để `--apply`.
