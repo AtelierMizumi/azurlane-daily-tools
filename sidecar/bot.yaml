@@ -1,5 +1,5 @@
 # commission_bot configuration — all fields optional, defaults in commission_bot.py:DEFAULTS
-serial: 192.168.240.112:5555
+# serial: taken from daily.yaml (fallback: built-in literal)
 adb: null            # null = auto-detect: $ADB, ~/Android/Sdk/platform-tools/adb, PATH
 max_steps: 60
 claim_urgent: true   # visit the URGENT tab after DAILY has nothing left
