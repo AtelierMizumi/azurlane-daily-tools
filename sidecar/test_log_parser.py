@@ -38,6 +38,19 @@ class ParseLines(unittest.TestCase):
         s = parse_lines(["2026-10-29 20:46:03.906 | INFO | COMMISSION SCAN"])
         self.assertTrue(s.commission_started)
 
+    def test_already_running_counts_as_started_and_logged_in(self):
+        # Real line from the 2026-10-29 e2e run: the game was still alive in
+        # Waydroid, so ALAS skipped app start and login entirely.
+        s = parse_lines(["2026-10-29 22:51:59.881 | INFO | App is already running, goto main page"])
+        self.assertTrue(s.app_started)
+        self.assertTrue(s.login_ok)
+
+    def test_app_not_running_line_alone_is_not_started(self):
+        # The fresh path logs "App is not running, start app and goto main
+        # page" first; started is only counted on the login.py "App start" line.
+        s = parse_lines(["App is not running, start app and goto main page"])
+        self.assertFalse(s.app_started)
+
     def test_old_commission_detect_text_is_not_a_scan(self):
         s = parse_lines(["═══ Commission detect ═══", "Commission detect"])
         self.assertFalse(s.commission_started)

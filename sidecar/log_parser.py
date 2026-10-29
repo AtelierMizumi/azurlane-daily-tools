@@ -15,6 +15,11 @@ Markers were verified by reading the ALAS source (read-only):
                         dispatched by alas.py:188 `def commission`). Logged after the
                         task returns, whether or not it succeeded; failures show up as
                         entries in RunState.errors.
+  - app already running: alas.py:177 (goto_main)
+                        logger.info('App is already running, goto main page')
+                        Logged when the game is still alive in the device session;
+                        ALAS skips app start and login entirely. Counts as both
+                        app started and login ok.
 
 Regexes (not exact equality) are used because the logger wraps `hr` lines in
 box characters and prefixes lines with timestamps.
@@ -27,6 +32,7 @@ from pathlib import Path
 from typing import Iterable
 
 _APP_START = re.compile(r"App start")
+_APP_ALREADY_RUNNING = re.compile(r"App is already running")
 _LOGIN_OK = re.compile(r"Login success")
 _COMMISSION_STARTED = re.compile(r"COMMISSION SCAN")
 _COMMISSION_DONE = re.compile(r"Scheduler:\s*End task\s*`Commission`")
@@ -50,6 +56,11 @@ def parse_lines(lines: Iterable[str]) -> RunState:
         line = raw.rstrip("\r\n")
         if _APP_START.search(line):
             state.app_started = True
+        if _APP_ALREADY_RUNNING.search(line):
+            # No fresh app start or login happens on this path; reaching the
+            # main page means the game is up and already logged in.
+            state.app_started = True
+            state.login_ok = True
         if _LOGIN_OK.search(line):
             state.login_ok = True
         if _COMMISSION_STARTED.search(line):
