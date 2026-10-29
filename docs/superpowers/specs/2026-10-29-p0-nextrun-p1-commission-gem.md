@@ -26,7 +26,7 @@ Kiến trúc chốt: **C (lai)** — sidecar + config ALAS là chính. Ràng bu�
 ### 1c. Bước ngoặt 2026-10-30: chuyển sang fork ALAS (ghi đè phần mềm lượng phương án trên)
 
 Người dùng quyết định (sau khi thấy GUI gốc của ALAS): **fork ALAS, patch theo ý riêng, lưu trên GitHub** —
-`https://github.com/AtelierMizumi/AzurLaneAutoScript`, branch `azdaily`. Hệ quả:
+`https://github.com/AtelierMizumi/AzurLaneAutoScript-Continued`, branch `azdaily`. Hệ quả:
 
 - Trigger P1 (check commission sau sortie) chuyển vào **trong ALAS**: patch `791c4944` thêm option
   `Commission > Check After Sorties` — hook ở `alas.py` `loop()` sau khi task sortie kết thúc, `cross_set`
