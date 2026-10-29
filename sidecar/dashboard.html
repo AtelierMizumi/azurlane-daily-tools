@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>azdaily — dashboard</title>
+<style>
+  :root { --bg:#12141a; --card:#1b1f29; --line:#2a3040; --fg:#d7dce6; --dim:#8b93a5;
+          --ok:#4cc38a; --bad:#e5484d; --warn:#f5a524; --accent:#5b8def; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  header { display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+           padding:14px 18px; border-bottom:1px solid var(--line); }
+  h1 { font-size:18px; margin:0 auto 0 0; }
+  .badge { padding:3px 10px; border-radius:20px; background:var(--card);
+           border:1px solid var(--line); font-size:12px; white-space:nowrap; }
+  .b-ok { color:var(--ok); border-color:var(--ok); }
+  .b-bad { color:var(--bad); border-color:var(--bad); }
+  .b-warn { color:var(--warn); border-color:var(--warn); }
+  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+         gap:14px; padding:14px 18px; max-width:1400px; margin:0 auto; }
+  section { background:var(--card); border:1px solid var(--line);
+            border-radius:10px; padding:12px 14px; }
+  section.wide { grid-column:1/-1; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+       color:var(--dim); margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; color:var(--dim); font-weight:500; padding:4px 8px;
+       border-bottom:1px solid var(--line); }
+  td { padding:4px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  .dim { color:var(--dim); }
+  button { background:var(--accent); color:#fff; border:none; border-radius:7px;
+           padding:7px 14px; font-size:13px; cursor:pointer; margin:2px 4px 2px 0; }
+  button:hover { filter:brightness(1.15); }
+  button:disabled { opacity:.4; cursor:default; }
+  button.danger { background:var(--bad); }
+  button.ghost { background:transparent; border:1px solid var(--line); color:var(--fg); }
+  pre { background:#0d0f14; border:1px solid var(--line); border-radius:8px;
+        padding:10px; overflow:auto; max-height:340px; font-size:12px;
+        line-height:1.5; margin:0; white-space:pre-wrap; word-break:break-all; }
+  .note { font-size:12px; color:var(--dim); margin-top:8px; }
+  .stagebar { display:flex; flex-direction:column; gap:2px; }
+  .stage { display:flex; gap:10px; padding:3px 6px; border-radius:6px; }
+  .stage.pass { background:rgba(76,195,138,.08); }
+  .stage.fail { background:rgba(229,72,77,.10); }
+  .stage .name { min-width:150px; font-weight:600; }
+  #flash { position:fixed; bottom:16px; right:16px; background:var(--card);
+           border:1px solid var(--accent); border-radius:8px; padding:10px 16px;
+           display:none; max-width:420px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>azdaily <span class="dim" id="ver"></span></h1>
+  <span class="badge" id="b-state">…</span>
+  <span class="badge" id="b-container">ALAS: …</span>
+  <span class="badge" id="b-waydroid">Waydroid: …</span>
+  <span class="badge" id="b-screen">Màn hình: …</span>
+  <span class="badge dim" id="b-clock"></span>
+</header>
+
+<main>
+  <section>
+    <h2>Điều khiển</h2>
+    <button id="btn-start">Start ALAS</button>
+    <button id="btn-stopalas" class="danger">Stop ALAS</button>
+    <div style="margin-top:12px">
+      <button id="btn-check">Check</button>
+      <button id="btn-run">Run now</button>
+      <button id="btn-apply">Apply + Run</button>
+      <button id="btn-stoprun" class="danger">Stop run</button>
+    </div>
+    <div class="note" id="always-on"></div>
+    <div class="note">Run-once chỉ dùng khi ALAS đang dừng (pipeline có kiểm
+      soát: chạy Commission rồi stop). Ở chế độ always-on, ALAS tự chạy mọi
+      task theo lịch của nó — xem panel Lịch ALAS.</div>
+  </section>
+
+  <section class="wide">
+    <h2>Pipeline hiện tại</h2>
+    <div class="stagebar" id="stages"><div class="dim">Không có run nào.</div></div>
+    <div class="note" id="run-note"></div>
+  </section>
+
+  <section class="wide">
+    <h2>Lịch ALAS (từ log mới nhất)</h2>
+    <div class="note" id="mission-note"></div>
+    <table id="schedule"><thead><tr>
+      <th>Task</th><th>Trạng thái</th><th>Bắt đầu</th><th>Kết thúc</th>
+      <th>Giây</th><th>NextRun</th></tr></thead><tbody></tbody></table>
+    <div class="note" id="anomalies"></div>
+  </section>
+
+  <section class="wide">
+    <h2>Lịch sử pipeline</h2>
+    <table id="history"><thead><tr>
+      <th>Lượt</th><th>Kết quả</th><th>Bắt đầu</th><th>Kết thúc</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section class="wide">
+    <h2>Log ALAS (50 dòng cuối)</h2>
+    <pre id="logtail">…</pre>
+  </section>
+</main>
+<div id="flash"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let TOKEN = localStorage.getItem("azdaily-token") || "";
+
+function flash(msg, ms = 4000) {
+  const el = $("flash"); el.textContent = msg; el.style.display = "block";
+  clearTimeout(el._t); el._t = setTimeout(() => el.style.display = "none", ms);
+}
+
+async function api(path, opts = {}) {
+  const headers = Object.assign({"Content-Type": "application/json"}, opts.headers || {});
+  if (TOKEN) headers["X-Azdaily-Token"] = TOKEN;
+  const res = await fetch(path, Object.assign({headers}, opts));
+  if (res.status === 401 && !TOKEN) {
+    TOKEN = prompt("Daemon yêu cầu token:") || "";
+    localStorage.setItem("azdaily-token", TOKEN);
+    return api(path, opts);
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || data.error || ("HTTP " + res.status));
+  return data;
+}
+
+function badge(el, text, cls) {
+  el.textContent = text; el.className = "badge" + (cls ? " " + cls : "");
+}
+
+function renderStages(st) {
+  const box = $("stages");
+  const stages = st.stages || [];
+  if (!stages.length && !st.active) {
+    box.innerHTML = '<div class="dim">Không có run nào.</div>'; return;
+  }
+  box.innerHTML = "";
+  for (const [name, ok, detail] of stages) {
+    const div = document.createElement("div");
+    div.className = "stage " + (ok ? "pass" : "fail");
+    div.innerHTML = '<span class="name">' + (ok ? "✔" : "✘") + " " + name +
+                    '</span><span class="dim">' + detail + "</span>";
+    box.appendChild(div);
+  }
+  $("run-note").textContent = st.active
+    ? ("Đang chạy (" + st.mode + ")…")
+    : (st.result ? ("Kết quả: " + st.result +
+        (st.exit_code != null ? " (exit " + st.exit_code + ")" : "") +
+        (st.stop_detail ? " — " + st.stop_detail : "")) : "");
+}
+
+function renderSchedule(sc) {
+  const tb = $("schedule").querySelector("tbody");
+  tb.innerHTML = "";
+  for (const t of sc.tasks || []) {
+    const tr = document.createElement("tr");
+    const cls = t.status === "done" ? "ok" : (t.status === "incomplete" ? "warn" : "bad");
+    tr.innerHTML = "<td>" + t.name + '</td><td class="' + cls + '">' + t.status +
+      "</td><td>" + (t.started || "—") + "</td><td>" + (t.ended || "—") +
+      "</td><td>" + (t.duration_s != null ? Math.round(t.duration_s) : "—") +
+      "</td><td>" + ((sc.next_runs || {})[t.name] || "—") + "</td>";
+    tb.appendChild(tr);
+  }
+  $("mission-note").textContent = sc.mission_note || "";
+  $("anomalies").textContent = (sc.anomalies || []).length
+    ? ("Bất thường: " + sc.anomalies.join(" · ")) : "";
+}
+
+function render(s) {
+  $("ver").textContent = "v" + s.daemon.version;
+  const pipe = s.pipeline;
+  const runningAlas = s.container.running;
+  let stateText, stateCls;
+  if (pipe.active) { stateText = "PIPELINE ĐANG CHẠY"; stateCls = "b-warn"; }
+  else if (runningAlas) { stateText = "ALAS ĐANG CHẠY"; stateCls = "b-ok"; }
+  else { stateText = "IDLE"; stateCls = ""; }
+  badge($("b-state"), stateText, stateCls);
+  badge($("b-container"), "ALAS: " + (runningAlas ? "running" : "stopped"),
+        runningAlas ? "b-ok" : "");
+  badge($("b-waydroid"), "Waydroid: " + (s.waydroid.session || "unknown"),
+        s.waydroid.session === "RUNNING" ? "b-ok" :
+        (s.waydroid.session === "FROZEN" ? "b-bad" : "b-warn"));
+  badge($("b-screen"), "Màn hình: " + (s.watchdog.screen || "…"),
+        s.watchdog.screen === "stalled" ? "b-bad" : "");
+  $("always-on").textContent = s.daemon.always_on
+    ? "Always-on ĐANG BẬT — daemon giữ container chạy, ALAS tự lập lịch."
+    : (s.daemon.run_at ? ("Always-on TẮT — tự chạy pipeline lúc " + s.daemon.run_at + " mỗi ngày.")
+                       : "Always-on TẮT — chỉ chạy khi bấm nút.");
+  $("btn-start").disabled = runningAlas || pipe.active;
+  $("btn-stopalas").disabled = !runningAlas || pipe.active;
+  $("btn-stoprun").disabled = !pipe.active;
+  ["btn-check", "btn-run", "btn-apply"].forEach(id => $(id).disabled = pipe.active);
+  renderStages(pipe);
+  renderSchedule(s.schedule);
+}
+
+async function refreshHistory() {
+  const data = await api("/api/history");
+  const tb = $("history").querySelector("tbody");
+  tb.innerHTML = "";
+  for (const r of data.runs || []) {
+    const tr = document.createElement("tr");
+    const cls = r.result === "success" ? "ok" : "bad";
+    tr.innerHTML = "<td>" + r.dir + '</td><td class="' + cls + '">' + r.result +
+      "</td><td>" + (r.started || "—") + "</td><td>" + (r.finished || "—") + "</td>";
+    tb.appendChild(tr);
+  }
+}
+
+async function refreshLog() {
+  const data = await api("/api/logtail");
+  $("logtail").textContent = (data.lines || []).join("\n") || "(log trống)";
+}
+
+async function tick() {
+  try {
+    render(await api("/api/status"));
+  } catch (e) { flash("Lỗi: " + e.message); }
+}
+async function slowTick() {
+  try { await Promise.all([refreshHistory(), refreshLog()]); } catch (e) { /* keep last */ }
+}
+
+async function action(path, body, done) {
+  try {
+    const data = await api(path, {method: "POST", body: JSON.stringify(body)});
+    flash(data.detail || "OK");
+    if (done) done();
+  } catch (e) { flash("Lỗi: " + e.message, 6000); }
+  tick();
+}
+
+$("btn-start").onclick = () => action("/api/container", {action: "start"});
+$("btn-stopalas").onclick = () => action("/api/container", {action: "stop"});
+$("btn-check").onclick = () => action("/api/run", {mode: "check"});
+$("btn-run").onclick = () => action("/api/run", {mode: "run"});
+$("btn-apply").onclick = () => action("/api/run", {mode: "apply"});
+$("btn-stoprun").onclick = () => action("/api/stop", {});
+
+setInterval(tick, 3000);
+setInterval(slowTick, 10000);
+tick(); slowTick();
+setInterval(() => $("b-clock").textContent = new Date().toLocaleTimeString(), 1000);
+</script>
+</body>
+</html>

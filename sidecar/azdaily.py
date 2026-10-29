@@ -111,6 +111,11 @@ def cmd_watchdog(rest: list[str]) -> int:
     return _subcommand_process("watchdog.py", rest)
 
 
+def cmd_daemon(rest: list[str]) -> int:
+    from dashboard import main
+    return main(rest)
+
+
 def cmd_test(rest: list[str]) -> int:
     steps: list[tuple[str, list[str]]] = [
         ("unit tests", [sys.executable, "-m", "unittest", *TEST_MODULES]),
@@ -160,22 +165,39 @@ COMMANDS = {
     "report": ("ALAS schedule report, newest log by default (flags: --log)", cmd_report),
     "bot": ("commission claim bot (commission_bot.py flags)", cmd_bot),
     "watchdog": ("ALAS watchdog sidecar (watchdog.py flags)", cmd_watchdog),
+    "daemon": ("web dashboard + supervisor: always-on ALAS, live stages, "
+               "history, log tail (flags: --port --host --token --no-browser)",
+               cmd_daemon),
     "test": ("offline test suite: unit tests + state machine + bot selftest", cmd_test),
 }
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="azdaily", description="azurlane-daily-tools unified entry point")
-    parser.add_argument("--version", action="version", version=f"azdaily {VERSION}")
-    sub = parser.add_subparsers(dest="command", required=True, metavar="command")
+def _usage() -> str:
+    lines = ["usage: azdaily [--version] <command> [flags...]", "", "commands:"]
     for name, (help_text, _fn) in COMMANDS.items():
-        sp = sub.add_parser(name, help=help_text)
-        sp.add_argument("rest", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
-    args = parser.parse_args(argv)
+        lines.append(f"  {name:<10} {help_text}")
+    return "\n".join(lines)
+
+
+def main(argv: list[str] | None = None) -> int:
+    # Manual dispatch instead of argparse subparsers: REMAINDER silently
+    # rejects option-looking flags right after the subcommand, and every
+    # command forwards its own flags to its own parser.
+    args = list(sys.argv[1:] if argv is None else argv)
+    if args and args[0] in ("--version", "version"):
+        print(f"azdaily {VERSION}")
+        return 0
+    if not args or args[0] in ("-h", "--help", "help"):
+        print(_usage())
+        return 0 if args else 2
+    command, rest = args[0], args[1:]
+    if command not in COMMANDS:
+        print(f"azdaily: error: unknown command {command!r}\n\n{_usage()}",
+              file=sys.stderr)
+        raise SystemExit(2)
     if str(SIDE) not in sys.path:
         sys.path.insert(0, str(SIDE))
-    return COMMANDS[args.command][1](args.rest)
+    return COMMANDS[command][1](rest)
 
 
 if __name__ == "__main__":

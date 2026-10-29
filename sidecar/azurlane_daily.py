@@ -37,6 +37,22 @@ LOG_POLL_SECONDS = 30
 DOCKER_TIMEOUT = 60
 NTFY_TIMEOUT = 10
 RUNS_DIR = Path(__file__).parent / "runs"
+# Live-run state for the dashboard: rewritten after every stage, so the UI
+# (and a restarted daemon) can read the current run from disk alone.
+STATE_FILENAME = "latest-state.json"
+
+
+def _dump_state(path: Path | None, payload: dict) -> None:
+    """Write the live-state JSON atomically; never let it break the run."""
+    if path is None:
+        return
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(path)
+    except OSError:
+        pass
 
 Stage = tuple[str, bool, str]
 
@@ -140,9 +156,10 @@ def run_daily(
     runs_dir: Path | None = None,
 ) -> dict:
     """Run Commission once. deploy_path=None skips the deploy.yaml Run check."""
+    runs_dir = Path(runs_dir) if runs_dir is not None else RUNS_DIR
     out = _run_core(cfg, runner, http_get, clock, sleep, alas_config_path, log_dir,
-                    apply, deploy_path)
-    return _finalize(out, cfg, Path(runs_dir) if runs_dir is not None else RUNS_DIR)
+                    apply, deploy_path, state_path=runs_dir / STATE_FILENAME)
+    return _finalize(out, cfg, runs_dir)
 
 
 def _run_core(
@@ -155,11 +172,20 @@ def _run_core(
     log_dir: Path,
     apply: bool,
     deploy_path: Path | None,
+    state_path: Path | None = None,
+    state_mode: str = "run",
 ) -> dict:
     stages: list[Stage] = []
     started = _now()
 
+    def emit(name: str, ok: bool, detail: str) -> None:
+        stages.append((name, ok, detail))
+        _dump_state(state_path, {"mode": state_mode, "result": None, "stages": stages,
+                                 "started": started, "finished": None})
+
     def finish(result: str) -> dict:
+        _dump_state(state_path, {"mode": state_mode, "result": result, "stages": stages,
+                                 "started": started, "finished": _now()})
         return {"result": result, "stages": stages, "started": started, "finished": _now()}
 
     container = cfg.alas_container
@@ -167,7 +193,7 @@ def _run_core(
     # 1. Preflight BEFORE start (Waydroid session/FROZEN, container exists, host
     #    adb port). The resolution check needs the container up: it runs after start.
     problems = check_waydroid(runner, container, cfg.device)
-    stages.append(("preflight", not problems, "; ".join(problems) or "ok"))
+    emit("preflight", not problems, "; ".join(problems) or "ok")
     if problems:
         return finish("preflight_failed")
 
@@ -178,12 +204,12 @@ def _run_core(
         DOCKER_TIMEOUT,
     )
     if rc != 0:
-        stages.append(("container state", False, f"docker inspect failed: {out.strip()}"))
+        emit("container state", False, f"docker inspect failed: {out.strip()}")
         return finish("preflight_failed")
     if out.strip() == "true":
-        stages.append(("container state", False, f"'{container}' is already running; left untouched"))
+        emit("container state", False, f"'{container}' is already running; left untouched")
         return finish("already_running")
-    stages.append(("container state", True, "stopped"))
+    emit("container state", True, "stopped")
 
     # 3. ALAS config check (alas.json and deploy.yaml Run) and optional fix.
     next_run_warning: str | None = None
@@ -201,13 +227,13 @@ def _run_core(
                 backups.append(apply_deploy_run(deploy_path))
             data = load_alas_config(alas_config_path)
             problems = check_alas_config(data, deploy_path)
-            stages.append(("config apply", not problems,
-                           "backup at " + ", ".join(str(b) for b in backups)))
+            emit("config apply", not problems,
+                 "backup at " + ", ".join(str(b) for b in backups))
         next_run_warning = commission_next_run_warning(data)
     except (OSError, ValueError) as e:  # FileNotFoundError, bad JSON
-        stages.append(("config", False, str(e)))
+        emit("config", False, str(e))
         return finish("config_failed")
-    stages.append(("config", not problems, "; ".join(problems) or "ok"))
+    emit("config", not problems, "; ".join(problems) or "ok")
     if problems:
         return finish("config_failed")
 
@@ -220,14 +246,14 @@ def _run_core(
     try:
         container_started = True  # set first: a failed/partial start must still be stopped
         rc, out = runner.run(["docker", "start", container], DOCKER_TIMEOUT)
-        stages.append(("docker start", rc == 0, out.strip() or ("ok" if rc == 0 else f"rc={rc}")))
+        emit("docker start", rc == 0, out.strip() or ("ok" if rc == 0 else f"rc={rc}"))
         if rc != 0:
             return finish("alas_error")
 
         # 4b. Screen resolution via the container's adb (needs the container running).
         problems = check_resolution(runner, container, cfg.device)
         want_w, want_h = cfg.device.resolution
-        stages.append(("resolution", not problems, "; ".join(problems) or f"{want_w}x{want_h}"))
+        emit("resolution", not problems, "; ".join(problems) or f"{want_w}x{want_h}")
         if problems:
             result = "preflight_failed"
             return finish(result)
@@ -243,8 +269,8 @@ def _run_core(
             if ready or clock() >= deadline:
                 break
             sleep(WEBUI_POLL_SECONDS)
-        stages.append(("webui", ready, cfg.alas_webui_url if ready else
-                       f"no HTTP 200 from {cfg.alas_webui_url} within {WEBUI_WAIT_SECONDS}s"))
+        emit("webui", ready, cfg.alas_webui_url if ready else
+             f"no HTTP 200 from {cfg.alas_webui_url} within {WEBUI_WAIT_SECONDS}s")
         if not ready:
             result = "webui_timeout"
             return finish(result)
@@ -264,7 +290,7 @@ def _run_core(
                               ("login ok", state.login_ok),
                               ("commission started", state.commission_started),
                               ("commission done", state.commission_done)):
-            stages.append((name, reached, "seen in log" if reached else NOT_REACHED))
+            emit(name, reached, "seen in log" if reached else NOT_REACHED)
 
         # Ruling 46: success needs the commission scan to have started AND the task
         # to have ended AND no errors. "End task" alone is logged even when ALAS
@@ -286,18 +312,18 @@ def _run_core(
             detail = f"Commission not finished within {cfg.run_minutes} min"
             if next_run_warning:
                 detail += f"; {next_run_warning}"
-        stages.append(("commission", result == "success", detail))
+        emit("commission", result == "success", detail)
         return finish(result)
     except Exception as e:  # report instead of crashing; `finally` still stops the container
-        stages.append(("run", False, f"{type(e).__name__}: {e}"))
+        emit("run", False, f"{type(e).__name__}: {e}")
         return finish("alas_error")
     finally:
         if container_started:
             # Guarded: an exception here must not replace the returned dict.
             try:
                 rc, out = runner.run(["docker", "stop", container], DOCKER_TIMEOUT)
-                stages.append(("docker stop", rc == 0,
-                               out.strip() or ("ok" if rc == 0 else f"rc={rc}")))
+                emit("docker stop", rc == 0,
+                     out.strip() or ("ok" if rc == 0 else f"rc={rc}"))
             except Exception as e:
                 stages.append(("docker stop", False, f"{type(e).__name__}: {e}"))
 
@@ -367,6 +393,9 @@ def _finalize(out: dict, cfg: DailyConfig, runs_dir: Path) -> dict:
         stages.append(_notify(cfg.ntfy_url, out))
     stages.append(_write_summary(out, cfg, runs_dir))
     out["stages"] = _ordered(stages)
+    _dump_state(runs_dir / STATE_FILENAME,
+                {"mode": "run", "result": out["result"], "stages": out["stages"],
+                 "started": out["started"], "finished": out["finished"]})
     return out
 
 
@@ -423,16 +452,24 @@ def _real_deps() -> tuple[Runner, Callable[[str], int], Callable[[], float], Cal
 
 
 def run_check(cfg: DailyConfig, runner: Runner, alas_config_path: Path,
-              deploy_path: Path | None = None) -> list[Stage]:
+              deploy_path: Path | None = None,
+              state_path: Path | None = None) -> list[Stage]:
     """Preflight + ALAS config check only. Never starts or stops anything."""
     stages: list[Stage] = []
+    started = _now()
+
+    def emit(name: str, ok: bool, detail: str) -> None:
+        stages.append((name, ok, detail))
+        _dump_state(state_path, {"mode": "check", "result": None, "stages": stages,
+                                 "started": started, "finished": None})
+
     problems = check_waydroid(runner, cfg.alas_container, cfg.device)
-    stages.append(("preflight", not problems, "; ".join(problems) or "ok"))
+    emit("preflight", not problems, "; ".join(problems) or "ok")
 
     # The resolution needs the container's adb, so it is only checked when the
     # container is already running (Ruling 31).
     if problems:
-        stages.append(("resolution", True, "skipped (preflight failed)"))
+        emit("resolution", True, "skipped (preflight failed)")
     else:
         rc, out = runner.run(
             ["docker", "inspect", "--type", "container", "-f", "{{.State.Running}}",
@@ -440,25 +477,28 @@ def run_check(cfg: DailyConfig, runner: Runner, alas_config_path: Path,
             DOCKER_TIMEOUT,
         )
         if rc != 0:
-            stages.append(("resolution", True, f"skipped (docker inspect rc={rc})"))
+            emit("resolution", True, f"skipped (docker inspect rc={rc})")
         elif out.strip() != "true":
-            stages.append(("resolution", True, "skipped (container stopped)"))
+            emit("resolution", True, "skipped (container stopped)")
         else:
             res = check_resolution(runner, cfg.alas_container, cfg.device)
             want_w, want_h = cfg.device.resolution
-            stages.append(("resolution", not res, "; ".join(res) or f"{want_w}x{want_h}"))
+            emit("resolution", not res, "; ".join(res) or f"{want_w}x{want_h}")
 
     try:
         data = load_alas_config(alas_config_path)
         problems = check_alas_config(data, deploy_path)
-        stages.append(("config", not problems, "; ".join(problems) or "ok"))
+        emit("config", not problems, "; ".join(problems) or "ok")
         warning = commission_next_run_warning(data)
         note = mission_claim_note(data)
         detail = "; ".join(part for part in (warning, note) if part)
         if detail:  # Ruling 33: a warning, not a failure
-            stages.append(("next run", True, detail))
+            emit("next run", True, detail)
     except (OSError, ValueError) as e:
-        stages.append(("config", False, str(e)))
+        emit("config", False, str(e))
+    _dump_state(state_path, {"mode": "check", "result": ("ok" if all(ok for _, ok, _ in stages)
+                                                else "check_failed"),
+                             "stages": stages, "started": started, "finished": _now()})
     return stages
 
 
@@ -475,7 +515,8 @@ def main(argv: list[str] | None = None) -> int:
     log_dir = Path(cfg.alas_repo_dir) / "log"
 
     if args.check:
-        stages = run_check(cfg, runner, alas_config_path, deploy_path)
+        stages = run_check(cfg, runner, alas_config_path, deploy_path,
+                           state_path=RUNS_DIR / STATE_FILENAME)
         print(format_e2e_report(stages))
         return 0 if all(ok for _, ok, _ in stages) else 1
 

@@ -1,0 +1,20 @@
+# systemd user unit for the azdaily daemon (dashboard + ALAS supervisor).
+# Install:
+#   cp sidecar/azdaily-daemon.service.example \
+#      ~/.config/systemd/user/azdaily-daemon.service
+#   # sửa ExecStart nếu dự án không nằm ở ~/Projects/Tools/azurlane-daily-tools
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now azdaily-daemon
+# Dashboard: http://127.0.0.1:22268
+
+[Unit]
+Description=azdaily daemon (web dashboard + ALAS supervisor)
+After=network-online.target docker.service
+
+[Service]
+ExecStart=%h/Projects/Tools/azurlane-daily-tools/azdaily daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -15,3 +15,11 @@ timeouts:
 
 notify:
   ntfy_url: null                    # URL topic ntfy để nhận thông báo; đặt null để tắt thông báo
+
+daemon:
+  listen: 127.0.0.1:22268           # Web dashboard (22268 = cạnh ALAS WebUI 22267); đổi host ngoài localhost thì BẮT BUỘC đặt token
+  token: null                       # token bảo vệ API khi mở ra LAN
+  always_on: true                   # giữ container ALAS chạy trong lúc daemon chạy (ALAS tự lập lịch)
+  run_at: null                      # chỉ dùng khi always_on=false: giờ spawn pipeline mỗi ngày, dạng "HH:MM"
+  watchdog: true                    # watchdog checks chạy trong daemon (đừng chạy watchdog.py riêng nữa)
+  watchdog_interval: 60             # giây giữa các vòng kiểm tra watchdog

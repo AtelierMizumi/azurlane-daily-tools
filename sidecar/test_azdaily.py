@@ -11,12 +11,11 @@ import azdaily
 
 
 class Version(unittest.TestCase):
-    def test_version_flag_prints_and_exits_zero(self):
+    def test_version_prints_and_returns_zero(self):
         buf = io.StringIO()
-        with self.assertRaises(SystemExit) as cm:
-            with contextlib.redirect_stdout(buf):
-                azdaily.main(["--version"])
-        self.assertEqual(cm.exception.code, 0)
+        with contextlib.redirect_stdout(buf):
+            code = azdaily.main(["--version"])
+        self.assertEqual(code, 0)
         self.assertIn(azdaily.VERSION, buf.getvalue())
 
     def test_version_matches_pyproject(self):
@@ -28,11 +27,27 @@ class Version(unittest.TestCase):
         self.assertEqual(data["project"]["version"], azdaily.VERSION)
 
 
-class UnknownCommand(unittest.TestCase):
-    def test_unknown_command_is_argparse_error(self):
+class Dispatch(unittest.TestCase):
+    def test_unknown_command_exits_two(self):
         with self.assertRaises(SystemExit) as cm:
             azdaily.main(["frobnicate"])
         self.assertEqual(cm.exception.code, 2)
+
+    def test_flags_after_command_reach_the_command(self):
+        # REMAINDER-style argparse would reject these; manual dispatch must not.
+        seen = []
+        with mock.patch.dict(azdaily.COMMANDS,
+                             {"__probe": ("probe", lambda rest: seen.append(rest) or 0)}):
+            code = azdaily.main(["__probe", "--port", "123", "--no-browser"])
+        self.assertEqual(code, 0)
+        self.assertEqual(seen, [["--port", "123", "--no-browser"]])
+
+    def test_help_lists_commands(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            azdaily.main(["--help"])
+        for name in azdaily.COMMANDS:
+            self.assertIn(name, buf.getvalue())
 
 
 class ConfigPath(unittest.TestCase):
