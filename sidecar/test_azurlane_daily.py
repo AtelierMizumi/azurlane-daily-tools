@@ -1,4 +1,5 @@
 import json, tempfile, unittest
+from unittest import mock
 from pathlib import Path
 from daily_config import DailyConfig, DeviceCfg
 from azurlane_daily import run_daily
@@ -151,6 +152,94 @@ class Orchestrator(unittest.TestCase):
         self.assertEqual(out["result"], "already_running")
         self.assertFalse(json.loads(cfg_path.read_text())["GameManager"]["AutoRestart"])
         self.assertFalse((Path(d) / "alas.json.bak").exists())
+
+    def _stage(self, out, name):
+        return [st for st in out["stages"] if st[0] == name]
+
+    def test_stop_failure_recorded(self):
+        d = tempfile.mkdtemp()
+        runner = FakeRunner({**STOPPED, "docker stop": (1, "boom")})
+        clock = Clock()
+        out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
+                        alas_json(d, GOOD_ALAS), Path(d))
+        self.assertEqual(out["result"], "timeout")  # unchanged by the stop failure
+        stop = self._stage(out, "docker stop")
+        self.assertEqual(len(stop), 1)
+        self.assertFalse(stop[0][1])
+        self.assertIn("boom", stop[0][2])
+
+    def test_stop_failure_without_output_carries_rc(self):
+        d = tempfile.mkdtemp()
+        runner = FakeRunner({**STOPPED, "docker stop": (1, "")})
+        clock = Clock()
+        out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
+                        alas_json(d, GOOD_ALAS), Path(d))
+        stop = self._stage(out, "docker stop")
+        self.assertFalse(stop[0][1])
+        self.assertIn("rc=1", stop[0][2])
+
+    def test_start_failure_without_output_carries_rc(self):
+        d = tempfile.mkdtemp()
+        runner = FakeRunner({**STOPPED, "docker start": (125, "")})
+        out = run_daily(make_cfg(), runner, lambda u: 200, Clock(), lambda s: None,
+                        alas_json(d, GOOD_ALAS), Path(d))
+        self.assertEqual(out["result"], "alas_error")
+        start = self._stage(out, "docker start")
+        self.assertFalse(start[0][1])
+        self.assertIn("rc=125", start[0][2])
+
+    def test_stop_raise_still_returns_dict(self):
+        d = tempfile.mkdtemp()
+
+        class StopRaises(FakeRunner):
+            def run(self, args, timeout):
+                if args[:2] == ["docker", "stop"]:
+                    self.calls.append(args)
+                    raise RuntimeError("daemon gone")
+                return super().run(args, timeout)
+
+        clock = Clock()
+        out = run_daily(make_cfg(), StopRaises(STOPPED), lambda u: 200, clock,
+                        lambda s: clock.advance(s), alas_json(d, GOOD_ALAS), Path(d))
+        self.assertIsInstance(out, dict)
+        self.assertEqual(out["result"], "timeout")
+        stop = self._stage(out, "docker stop")
+        self.assertEqual(len(stop), 1)
+        self.assertFalse(stop[0][1])
+        self.assertIn("RuntimeError", stop[0][2])
+
+    def test_snapshot_unstatable_file_does_not_crash(self):
+        d = tempfile.mkdtemp()
+        log_dir = Path(d)
+        (log_dir / "locked.txt").write_text(f"{DONE}\n")
+        real_stat = Path.stat
+
+        def flaky_stat(self, *a, **kw):
+            if self.name == "locked.txt":
+                raise PermissionError("denied")
+            return real_stat(self, *a, **kw)
+
+        runner = FakeRunner(STOPPED)
+        clock = Clock()
+        with mock.patch.object(Path, "stat", flaky_stat):
+            out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
+                            alas_json(d, GOOD_ALAS), log_dir)
+        self.assertEqual(out["result"], "timeout")
+        self.assertTrue(any(c[:2] == ["docker", "stop"] for c in runner.calls))
+
+    def test_snapshot_vanished_file_does_not_crash(self):
+        d = tempfile.mkdtemp()
+        log_dir = Path(d)
+        # glob lists the file, but it is gone by the time the snapshot stats it
+        gone = log_dir / "gone.txt"
+        with mock.patch("azurlane_daily._LogTail._files", lambda self: [gone]):
+            runner = FakeRunner(STOPPED)
+            clock = Clock()
+            out = run_daily(make_cfg(), runner, lambda u: 200, clock, lambda s: clock.advance(s),
+                            alas_json(d, GOOD_ALAS), log_dir)
+        self.assertIsInstance(out, dict)
+        self.assertEqual(out["result"], "timeout")
+        self.assertTrue(any(c[:2] == ["docker", "stop"] for c in runner.calls))
 
 
 if __name__ == "__main__":

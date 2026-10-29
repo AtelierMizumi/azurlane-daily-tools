@@ -37,17 +37,34 @@ class _LogTail:
     def __init__(self, log_dir: Path):
         self.log_dir = Path(log_dir)
         self.offsets: dict[str, int] = {}
+        # Files we could not stat at snapshot time existed before the run; their
+        # content is unknown, so they are never fed to the parser (Ruling 11).
+        self.ignored: set[str] = set()
         for p in self._files():
-            self.offsets[p.name] = p.stat().st_size
+            try:
+                self.offsets[p.name] = p.stat().st_size
+            except OSError:  # vanished or unreadable between glob and stat
+                self.ignored.add(p.name)
 
     def _files(self) -> list[Path]:
-        if not self.log_dir.is_dir():
+        try:
+            candidates = sorted(self.log_dir.glob("*.txt"))
+        except OSError:
             return []
-        return sorted(p for p in self.log_dir.glob("*.txt") if p.is_file())
+        files: list[Path] = []
+        for p in candidates:
+            try:
+                if p.is_file():
+                    files.append(p)
+            except OSError:  # e.g. PermissionError from stat
+                continue
+        return files
 
     def read_new(self) -> list[str]:
         lines: list[str] = []
         for p in self._files():
+            if p.name in self.ignored:
+                continue
             offset = self.offsets.get(p.name, 0)
             try:
                 with open(p, "rb") as f:
@@ -130,7 +147,7 @@ def run_daily(
     try:
         container_started = True  # set first: a failed/partial start must still be stopped
         rc, out = runner.run(["docker", "start", container], DOCKER_TIMEOUT)
-        stages.append(("docker start", rc == 0, out.strip() or "ok"))
+        stages.append(("docker start", rc == 0, out.strip() or ("ok" if rc == 0 else f"rc={rc}")))
         if rc != 0:
             return finish("alas_error")
 
@@ -180,5 +197,10 @@ def run_daily(
         return finish("alas_error")
     finally:
         if container_started:
-            rc, out = runner.run(["docker", "stop", container], DOCKER_TIMEOUT)
-            stages.append(("docker stop", rc == 0, out.strip() or "ok"))
+            # Guarded: an exception here must not replace the returned dict.
+            try:
+                rc, out = runner.run(["docker", "stop", container], DOCKER_TIMEOUT)
+                stages.append(("docker stop", rc == 0,
+                               out.strip() or ("ok" if rc == 0 else f"rc={rc}")))
+            except Exception as e:
+                stages.append(("docker stop", False, f"{type(e).__name__}: {e}"))
