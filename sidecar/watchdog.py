@@ -28,11 +28,14 @@ import urllib.request
 from pathlib import Path
 
 import yaml
+from daily_config import load_daily_config
 from PIL import Image, ImageChops
 
 log = logging.getLogger("watchdog")
 
 DEFAULT_CONFIG = Path(__file__).with_name("watchdog.yaml")
+DAILY_CONFIG = Path(__file__).with_name("daily.yaml")
+FALLBACK_SERIAL = "192.168.240.112:5555"
 
 
 class Config:
@@ -155,6 +158,17 @@ class Notifier:
             log.error("ntfy push failed: %s", e)
 
 
+def resolve_serial(daily_path: Path = DAILY_CONFIG) -> str:
+    """Serial from daily.yaml when present and valid, else FALLBACK_SERIAL."""
+    if not daily_path.exists():
+        return FALLBACK_SERIAL
+    try:
+        return load_daily_config(daily_path).device.serial
+    except Exception as e:  # never let a bad daily.yaml crash the watchdog
+        log.warning("daily.yaml unusable (%s); using fallback serial %s", e, FALLBACK_SERIAL)
+        return FALLBACK_SERIAL
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-c", "--config", default=str(DEFAULT_CONFIG))
@@ -174,7 +188,7 @@ def main() -> int:
 
     # Serial is the Waydroid adb endpoint; screencaps run through the
     # container's own adb so the host never starts an adb server.
-    screen = ScreenChecker(cfg.container, "192.168.240.112:5555")
+    screen = ScreenChecker(cfg.container, resolve_serial())
     notifier = Notifier(cfg.ntfy_url, cfg.fail_threshold)
 
     while True:

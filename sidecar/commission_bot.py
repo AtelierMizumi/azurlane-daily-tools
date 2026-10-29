@@ -45,6 +45,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import yaml
+from daily_config import load_daily_config
 
 log = logging.getLogger("commission_bot")
 
@@ -521,8 +522,20 @@ def replay(directory: str, cfg: dict) -> None:
         print(f"{p.name:32s} -> {state:16s} conf={score:.3f} boxes={len(boxes)}")
 
 
-def load_config(path: str | None) -> dict:
+def serial_from_daily(path: Path) -> str | None:
+    """Serial from daily.yaml, or None when the file is absent or unusable."""
+    if not Path(path).exists():
+        return None
+    try:
+        return load_daily_config(Path(path)).device.serial
+    except Exception as e:
+        log.warning("daily.yaml unusable (%s); ignoring it for serial", e)
+        return None
+
+
+def load_config(path: str | None, daily_path: Path = SIDE / "daily.yaml") -> dict:
     cfg = json.loads(json.dumps(DEFAULTS))  # deep copy
+    user: dict = {}
     if path:
         user = yaml.safe_load(Path(path).read_text()) or {}
         for key, value in user.items():
@@ -530,6 +543,8 @@ def load_config(path: str | None) -> dict:
                 cfg[key].update(value)
             else:
                 cfg[key] = value
+    if "serial" not in user:
+        cfg["serial"] = serial_from_daily(daily_path) or cfg["serial"]
     return cfg
 
 
