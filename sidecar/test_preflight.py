@@ -53,6 +53,56 @@ def tearDownModule():
     _patch.stop()
 
 
+class SubprocessEnv(unittest.TestCase):
+    """`uv run` puts sidecar/.venv first in PATH and sets VIRTUAL_ENV; the waydroid
+    launcher is a python script that would then pick the venv python (no dbus)."""
+
+    def _run_with(self, environ):
+        import os, subprocess
+        fake = mock.Mock(return_value=subprocess.CompletedProcess([], 0, "RUNNING", ""))
+        with mock.patch.dict(os.environ, environ, clear=True), \
+             mock.patch.object(preflight.subprocess, "run", fake):
+            rc, out = preflight.SubprocessRunner().run(["waydroid", "status"], 5)
+        self.assertEqual((rc, out), (0, "RUNNING"))
+        fake.assert_called_once()
+        return fake.call_args.kwargs
+
+    def test_env_has_no_virtualenv_and_no_venv_path_entries(self):
+        kwargs = self._run_with({
+            "VIRTUAL_ENV": "/home/u/sidecar/.venv",
+            "PATH": "/home/u/sidecar/.venv/bin:/usr/local/bin:/usr/bin:/opt/x/.venv/bin",
+            "HOME": "/home/u",
+        })
+        env = kwargs["env"]
+        self.assertNotIn("VIRTUAL_ENV", env)
+        entries = env["PATH"].split(":")
+        self.assertEqual(entries, ["/usr/local/bin", "/usr/bin"])
+        self.assertFalse(any("/.venv/" in e + "/" for e in entries))
+        self.assertEqual(env["HOME"], "/home/u")  # everything else is inherited
+
+    def test_env_without_venv_is_unchanged(self):
+        kwargs = self._run_with({"PATH": "/usr/bin:/bin", "LANG": "C"})
+        self.assertEqual(kwargs["env"], {"PATH": "/usr/bin:/bin", "LANG": "C"})
+
+    def test_missing_path_is_tolerated(self):
+        kwargs = self._run_with({"VIRTUAL_ENV": "/v/.venv"})
+        self.assertNotIn("VIRTUAL_ENV", kwargs["env"])
+        self.assertNotIn("PATH", kwargs["env"])
+
+    def test_real_environ_is_not_mutated(self):
+        import os
+        with mock.patch.dict(os.environ, {"VIRTUAL_ENV": "/v/.venv", "PATH": "/v/.venv/bin:/bin"}):
+            self._run_with_current()
+            self.assertEqual(os.environ["VIRTUAL_ENV"], "/v/.venv")
+            self.assertEqual(os.environ["PATH"], "/v/.venv/bin:/bin")
+
+    def _run_with_current(self):
+        import subprocess
+        fake = mock.Mock(return_value=subprocess.CompletedProcess([], 0, "", ""))
+        with mock.patch.object(preflight.subprocess, "run", fake):
+            preflight.SubprocessRunner().run(["waydroid", "status"], 5)
+
+
 class Preflight(unittest.TestCase):
     def test_all_good(self):
         self.assertEqual(check_waydroid(FakeRunner(OK), "alas", DEV), [])

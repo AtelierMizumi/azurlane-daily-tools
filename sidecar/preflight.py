@@ -10,6 +10,7 @@ runs AFTER `docker start`. Every problem names the rc or output and a remedy
 """
 from __future__ import annotations
 
+import os
 import re
 import socket
 import subprocess
@@ -31,11 +32,29 @@ class Runner(Protocol):
         ...
 
 
+def _clean_env() -> dict[str, str]:
+    """os.environ without the venv that `uv run` activates.
+
+    `uv run` sets VIRTUAL_ENV and puts sidecar/.venv/bin first in PATH. Launchers
+    such as `waydroid` are python scripts and would pick that venv's python, which
+    has no dbus. The copy leaves os.environ itself untouched.
+    """
+    env = dict(os.environ)
+    env.pop("VIRTUAL_ENV", None)
+    if "PATH" in env:
+        env["PATH"] = os.pathsep.join(
+            entry for entry in env["PATH"].split(os.pathsep)
+            if "/.venv/" not in entry + "/"
+        )
+    return env
+
+
 class SubprocessRunner:
     def run(self, args: list[str], timeout: float) -> tuple[int, str]:
         try:
             proc = subprocess.run(
-                args, capture_output=True, text=True, timeout=timeout
+                args, capture_output=True, text=True, timeout=timeout,
+                env=_clean_env(),
             )
         except subprocess.TimeoutExpired:
             return (124, f"timeout after {timeout}s: {' '.join(args)}")
