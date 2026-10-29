@@ -556,6 +556,39 @@ def setup_logging(run_dir: Path | None) -> None:
                         handlers=handlers)
 
 
+def capture(minutes: int, cfg: dict) -> int:
+    """Explore helper: screenshot the device every ~2s into runs/explore-<date>/.
+
+    Run it in the background while playing the game normally (e.g. canceling
+    one commission by hand) and the frames become template material for
+    crop_templates.py — see the P1 spec, section 4.
+    """
+    binary = detect_adb(cfg["adb"])
+    adb = Adb(cfg["serial"], binary)
+    run_dir = SIDE / "runs" / ("explore-" + time.strftime("%Y%m%d"))
+    run_dir.mkdir(parents=True, exist_ok=True)
+    setup_logging(run_dir)
+    log.info("capture: every 2s for %d min -> %s (Ctrl+C to stop)", minutes, run_dir)
+    deadline = time.time() + minutes * 60
+    n = 0
+    try:
+        while time.time() < deadline:
+            try:
+                shot = adb.screencap()
+            except Exception as exc:  # noqa: BLE001 - keep capturing through hiccups
+                log.warning("screencap failed: %s", exc)
+                time.sleep(2)
+                continue
+            n += 1
+            cv2.imwrite(str(run_dir / f"{n:03d}.png"), shot)
+            time.sleep(2)
+    except KeyboardInterrupt:
+        log.info("capture stopped by user")
+    log.info("captured %d frames -> %s", n, run_dir)
+    print(f"captured {n} frames -> {run_dir}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default=None, help="YAML config (default: bot.yaml if present)")
@@ -564,6 +597,8 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="classify and log, never tap")
     ap.add_argument("--selftest", action="store_true", help="validate templates, exit 1 on failure")
     ap.add_argument("--replay", metavar="DIR", help="classify saved screenshots, no device")
+    ap.add_argument("--capture", metavar="MINUTES", type=int,
+                    help="explore mode: screenshot every 2s for MINUTES minutes, no bot logic")
     args = ap.parse_args()
 
     config_path = args.config or (str(SIDE / "bot.yaml") if (SIDE / "bot.yaml").exists() else None)
@@ -578,6 +613,8 @@ def main() -> int:
     if args.replay:
         replay(args.replay, cfg)
         return 0
+    if args.capture is not None:
+        return capture(args.capture, cfg)
 
     binary = detect_adb(cfg["adb"])
     adb = Adb(cfg["serial"], binary)
