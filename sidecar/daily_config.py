@@ -68,7 +68,7 @@ def load_daily_config(path: Path) -> DailyConfig:
     raw_serial = _require(data, "device.serial")
     serial = "" if raw_serial is None else str(raw_serial).strip()
     if not serial:
-        raise ValueError("daily config: 'device.serial' must not be empty (e.g. 192.168.240.112:5555)")
+        raise ValueError("daily config: 'device.serial' must not be empty (e.g. 192.0.2.10:5555)")
 
     device = DeviceCfg(
         profile=profile,

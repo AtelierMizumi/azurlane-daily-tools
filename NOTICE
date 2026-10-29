@@ -1,0 +1,20 @@
+azurlane-daily-tools
+Copyright 2026 Minh Thuận Trần
+
+This product includes the azurlane-daily-tools sidecar and its documentation,
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party names are listed here to protect both their owners and users of
+this project:
+
+* "Azur Lane" and its associated assets are the property of Manjuu Co., Ltd.,
+  YongShi Technology Co., Ltd. and their publishers (YoStar Limited for the
+  English server). This project is an unofficial fan-made automation tool and
+  is not affiliated with, endorsed by, or sponsored by any of them. Using it
+  may violate the game's Terms of Service; the risk is the user's own.
+* AzurLaneAutoScript (ALAS) is an independent open-source project by LmeSzinc
+  and contributors (https://github.com/LmeSzinc/AzurLaneAutoScript). This
+  project orchestrates a stock ALAS installation and modifies none of its
+  code.
+* ntfy (https://ntfy.sh) by Philipp C. Heckel is referenced only as an
+  optional notification backend.

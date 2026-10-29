@@ -35,7 +35,7 @@ log = logging.getLogger("watchdog")
 
 DEFAULT_CONFIG = Path(__file__).with_name("watchdog.yaml")
 DAILY_CONFIG = Path(__file__).with_name("daily.yaml")
-FALLBACK_SERIAL = "192.168.240.112:5555"
+FALLBACK_SERIAL = "192.0.2.10:5555"
 
 
 class Config:

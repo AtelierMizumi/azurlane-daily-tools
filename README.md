@@ -69,7 +69,7 @@ cd sidecar && uv run watchdog.py
 ## Quy ước quan trọng
 
 - Không sửa code upstream ALAS trong `AzurLaneAutoScript/` — mọi thứ của ta nằm ở `sidecar/` (trừ `config/deploy.yaml` và `docker-compose.override.yml` vốn là user config/gitignored).
-- ALAS yêu cầu đúng **Android display 1280x720**, không phải cửa sổ desktop. `persist.waydroid.width/height` đã ghim display — resize cửa sổ Waydroid thoải mái (nội dung chỉ scale), miễn là `docker exec alas adb -s 192.168.240.112:5555 shell wm size` vẫn trả 1280x720.
+- ALAS yêu cầu đúng **Android display 1280x720**, không phải cửa sổ desktop. `persist.waydroid.width/height` đã ghim display — resize cửa sổ Waydroid thoải mái (nội dung chỉ scale), miễn là `docker exec alas adb -s 192.0.2.10:5555 shell wm size` vẫn trả 1280x720.
 - **FROZEN pitfall**: đóng cửa sổ Waydroid → container `FROZEN` (LXC freezer) → adb treo vô hạn, không lỗi không timeout. Hồi phục user-level (không cần root): `waydroid app launch com.YoStarEN.AzurLane` (tự unfreeze qua DBus). `waydroid container unfreeze` cần root.
 - Sau freeze/thaw, kết nối adb cũ chết ngầm — phải `adb disconnect` + `connect` lại. Watchdog sidecar phụ trách cả hai (keep-alive + reconnect).
 - Container adb của ALAS chiếm port 5037 của host (do `network_mode: host`); kill adb host trước khi chạy ALAS. Cần adb từ host: dùng `docker exec alas adb ...` để không đụng độ.
@@ -89,4 +89,15 @@ uv run python azurlane_daily.py --apply   # như --e2e, và cho phép sửa conf
 **Cảnh báo:** `--apply` có thể ghi `AzurLaneAutoScript/config/alas.json` và `AzurLaneAutoScript/config/deploy.yaml` (đặt `Run: ["alas"]` để container tự chạy instance `alas`), mỗi file có bản sao lưu `.bak` tạo trước khi ghi. Chỉ chạy khi ALAS đã dừng. Preflight kiểm tra độ phân giải qua adb của container sau `docker start`, nên `--check` bỏ qua bước này khi container đang dừng.
 
 - Chỉ hỗ trợ `device.profile: waydroid`; profile phone chưa được hỗ trợ.
-- `daily.yaml` nằm trong `sidecar/` và là bắt buộc với `azurlane_daily.py` (thiếu file sẽ báo `FAIL daily config`). Tạo bằng cách sao chép `sidecar/daily.example.yaml` thành `sidecar/daily.yaml` rồi chỉnh giá trị.
+- `daily.yaml` nằm trong `sidecar/` và là bắt buộc với `azurlane_daily.py` (thiếu file sẽ báo `FAIL daily config`). Tạo bằng cách sao chép `sidecar/daily.example.yaml` thành `sidecar/daily.yaml` rồi chỉnh giá trị (serial ví dụ `192.0.2.10` là địa chỉ RFC 5737 dành cho tài liệu — thay bằng serial Waydroid thật).
+
+## Bản quyền & nhãn hiệu
+
+Dự án phát hành theo **Apache License 2.0** — xem [LICENSE](LICENSE) và [NOTICE](NOTICE):
+
+- Dùng, sửa, phân phối lại tự do, kể cả thương mại; **không kèm bất kỳ bảo hành hay trách nhiệm pháp lý nào** — rủi ro khi sử dụng (kể cả rủi ro với tài khoản game) thuộc về người dùng.
+- Dự án là công cụ **fan-made phi chính thức**, không liên kết, không được chứng thực hay tài trợ bởi Manjuu/YoStar (chủ sở hữu Azur Lane) hay LmeSzinc (tác giả ALAS). "Azur Lane" và các tài sản liên quan là nhãn hiệu của chủ sở hữu tương ứng; các nhãn hiệu này **không** được cấp phép bởi dự án này.
+- Tên dự án `azurlane-daily-tools` và lệnh `azdaily` thuộc tác giả. Ai fork hay phân phối lại vui lòng giữ nguyên `LICENSE` và `NOTICE` — đó là điều kiện bảo đảm quyền lợi cho cả hai bên: người dùng nhận quyền bằng sáng chế rõ ràng (Apache-2.0 mục 3), tác giả được miễn trách nhiệm và giữ nhãn hiệu của mình.
+- Serial thiết bị trong ví dụ dùng địa chỉ `192.0.2.10` (RFC 5737, dải địa chỉ dành riêng cho tài liệu) — thay bằng serial Waydroid thật của bạn.
+
+Lưu ý: tự động hoá game nằm trong vùng xám của Điều khoản dịch vụ; tác giả phát hành công cụ này cho mục đích học tập và nghiên cứu, người dùng tự chịu trách nhiệm khi sử dụng.

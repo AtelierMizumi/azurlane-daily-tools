@@ -2,7 +2,7 @@
 
 device:
   profile: waydroid                 # Chỉ hỗ trợ "waydroid" (phone chưa có)
-  serial: 192.168.240.112:5555      # Địa chỉ ADB của thiết bị Waydroid (ip:port)
+  serial: 192.0.2.10:5555      # Địa chỉ ADB của thiết bị Waydroid (ip:port)
   resolution: 1280x720              # Độ phân giải màn hình, dạng WxH
 
 alas:

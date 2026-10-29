@@ -4,7 +4,7 @@ from daily_config import DeviceCfg
 import preflight
 from preflight import check_waydroid, check_resolution
 
-DEV = DeviceCfg(profile="waydroid", serial="192.168.240.112:5555", resolution=(1280, 720))
+DEV = DeviceCfg(profile="waydroid", serial="192.0.2.10:5555", resolution=(1280, 720))
 
 class FakeRunner:
     """Scripted runner. `answers` maps a substring of the joined args to (rc, out).
@@ -36,7 +36,7 @@ class FakeRunner:
 OK = {
     "waydroid status": (0, "Session:\tRUNNING\nContainer:\tRUNNING\nVendor type:\tMAINLINE"),
     "inspect": (0, "true"),
-    "adb connect": (0, "connected to 192.168.240.112:5555"),
+    "adb connect": (0, "connected to 192.0.2.10:5555"),
     "wm size": (0, "Physical size: 1280x720"),
 }
 
@@ -151,8 +151,8 @@ class PreStartOrder(unittest.TestCase):  # Ruling 31
         self.assertEqual(check_resolution(r, "alas", DEV), [])
         joined = [" ".join(c) for c in r.calls]
         self.assertEqual(len(joined), 2)
-        self.assertEqual(joined[0], "docker exec alas adb connect 192.168.240.112:5555")
-        self.assertEqual(joined[1], "docker exec alas adb -s 192.168.240.112:5555 shell wm size")
+        self.assertEqual(joined[0], "docker exec alas adb connect 192.0.2.10:5555")
+        self.assertEqual(joined[1], "docker exec alas adb -s 192.0.2.10:5555 shell wm size")
 
     def test_resolution_after_start_succeeds_on_stopped_world(self):
         r = FakeRunner({**OK, "inspect": (0, "false"), "docker start": (0, "alas")})
@@ -166,7 +166,7 @@ class PreStartOrder(unittest.TestCase):  # Ruling 31
         self.assertIn("rc=1", problems[0])
 
     def test_resolution_connect_failure_reported_and_skips_wm_size(self):
-        r = FakeRunner({**OK, "adb connect": (0, "failed to connect to 192.168.240.112:5555")})
+        r = FakeRunner({**OK, "adb connect": (0, "failed to connect to 192.0.2.10:5555")})
         problems = check_resolution(r, "alas", DEV)
         self.assertEqual(len(problems), 1)
         self.assertIn("adb connect", problems[0])

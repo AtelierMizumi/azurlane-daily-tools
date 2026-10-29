@@ -105,7 +105,7 @@ E2E thật **đã PASS** ngày 2026-10-29 (xem mục 3). Danh sách điều ki�
 1. Dừng scheduler ALAS trong GUI, rồi `docker stop alas`. Orchestrator yêu cầu container đang dừng. Lưu ý: lần stop đầu ALAS shutdown chậm nên bị SIGKILL (Exited 137) — vẫn ổn.
 2. `AzurLaneAutoScript/config/alas.json` phải tồn tại. **ĐÃ ĐẠT** (GUI đã tạo).
 3. `deploy.yaml` phải ghi được (thuộc user, không phải root). **ĐÃ ĐẠT** qua chown. `log/` chỉ cần đọc được, không cần ghi.
-4. `Alas.Emulator.Serial` trong `alas.json` bằng `device.serial` trong `daily.yaml`. **ĐÃ ĐẠT** (cả hai `192.168.240.112:5555`).
+4. `Alas.Emulator.Serial` trong `alas.json` bằng `device.serial` trong `daily.yaml`. **ĐÃ ĐẠT** (cả hai `192.0.2.10:5555`).
 5. `sidecar/daily.yaml` tồn tại. **ĐÃ ĐẠT** (trong worktree, git-ignored).
 6. Waydroid session RUNNING và không FROZEN. **ĐÃ ĐẠT**.
 7. `adb kill-server` trên host — nếu `--check` PASS preflight thì port 5037 đã rảnh, bước này không cần nữa.

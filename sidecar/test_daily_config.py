@@ -6,7 +6,7 @@ from daily_config import load_daily_config
 GOOD = """
 device:
   profile: waydroid
-  serial: 192.168.240.112:5555
+  serial: 192.0.2.10:5555
   resolution: 1280x720
 alas:
   container_name: alas
@@ -46,7 +46,7 @@ class LoadConfig(unittest.TestCase):
             self._load(GOOD.replace("  container_name: alas\n", ""))
 
     def test_serial_is_read_not_hardcoded(self):
-        cfg = self._load(GOOD.replace("192.168.240.112:5555", "10.0.0.9:5555"))
+        cfg = self._load(GOOD.replace("192.0.2.10:5555", "10.0.0.9:5555"))
         self.assertEqual(cfg.device.serial, "10.0.0.9:5555")
 
 
@@ -58,19 +58,19 @@ class SerialValidation(unittest.TestCase):  # Ruling 40
 
     def test_null_serial_rejected(self):
         with self.assertRaisesRegex(ValueError, "device.serial"):
-            self._load(GOOD.replace("serial: 192.168.240.112:5555", "serial:"))
+            self._load(GOOD.replace("serial: 192.0.2.10:5555", "serial:"))
 
     def test_explicit_null_serial_rejected(self):
         with self.assertRaisesRegex(ValueError, "device.serial"):
-            self._load(GOOD.replace("serial: 192.168.240.112:5555", "serial: null"))
+            self._load(GOOD.replace("serial: 192.0.2.10:5555", "serial: null"))
 
     def test_blank_serial_rejected(self):
         for blank in ('""', '"   "', '"\\t"'):
             with self.assertRaisesRegex(ValueError, "device.serial"):
-                self._load(GOOD.replace("serial: 192.168.240.112:5555", f"serial: {blank}"))
+                self._load(GOOD.replace("serial: 192.0.2.10:5555", f"serial: {blank}"))
 
     def test_other_serial_forms_accepted(self):
-        cfg = self._load(GOOD.replace("192.168.240.112:5555", "emulator-5554"))
+        cfg = self._load(GOOD.replace("192.0.2.10:5555", "emulator-5554"))
         self.assertEqual(cfg.device.serial, "emulator-5554")
 
 
@@ -90,7 +90,7 @@ class CommissionBotSerial(unittest.TestCase):
 
     def test_serial_from_daily_present(self):
         import commission_bot
-        p = self._daily(GOOD.replace("192.168.240.112:5555", "10.0.0.9:5555"))
+        p = self._daily(GOOD.replace("192.0.2.10:5555", "10.0.0.9:5555"))
         self.assertEqual(commission_bot.serial_from_daily(p), "10.0.0.9:5555")
 
     def test_serial_from_daily_absent_is_none(self):
@@ -103,13 +103,13 @@ class CommissionBotSerial(unittest.TestCase):
 
     def test_load_config_uses_daily_serial_when_bot_yaml_silent(self):
         import commission_bot
-        p = self._daily(GOOD.replace("192.168.240.112:5555", "10.0.0.9:5555"))
+        p = self._daily(GOOD.replace("192.0.2.10:5555", "10.0.0.9:5555"))
         cfg = commission_bot.load_config(None, daily_path=p)
         self.assertEqual(cfg["serial"], "10.0.0.9:5555")
 
     def test_load_config_bot_yaml_serial_wins(self):
         import commission_bot
-        p = self._daily(GOOD.replace("192.168.240.112:5555", "10.0.0.9:5555"))
+        p = self._daily(GOOD.replace("192.0.2.10:5555", "10.0.0.9:5555"))
         bot = Path(tempfile.mkdtemp()) / "bot.yaml"
         bot.write_text("serial: 10.1.1.1:5555\n")
         cfg = commission_bot.load_config(str(bot), daily_path=p)

@@ -42,7 +42,7 @@ def tearDownModule():
 
 def make_cfg():
     return DailyConfig(
-        device=DeviceCfg("waydroid", "192.168.240.112:5555", (1280, 720)),
+        device=DeviceCfg("waydroid", "192.0.2.10:5555", (1280, 720)),
         alas_container="alas", alas_webui_url="http://x",
         alas_repo_dir=Path("."), run_minutes=1, ntfy_url=None)
 
@@ -508,8 +508,8 @@ class ResolutionAfterStart(unittest.TestCase):  # Ruling 31 (C1)
         go(make_world(), r)
         joined = [" ".join(c) for c in r.calls]
         i_start = joined.index("docker start alas")
-        i_conn = joined.index("docker exec alas adb connect 192.168.240.112:5555")
-        i_wm = joined.index("docker exec alas adb -s 192.168.240.112:5555 shell wm size")
+        i_conn = joined.index("docker exec alas adb connect 192.0.2.10:5555")
+        i_wm = joined.index("docker exec alas adb -s 192.0.2.10:5555 shell wm size")
         i_stop = joined.index("docker stop alas")
         self.assertLess(i_start, i_conn)
         self.assertLess(i_conn, i_wm)
@@ -854,7 +854,7 @@ class Summary(unittest.TestCase):  # Ruling 34
                  lines=["App start", "Login success", "COMMISSION SCAN", DONE])
         data = self._summary(runs)
         self.assertEqual(data["result"], "success")
-        self.assertEqual(data["serial"], "192.168.240.112:5555")
+        self.assertEqual(data["serial"], "192.0.2.10:5555")
         self.assertEqual(data["started"], out["started"])
         self.assertTrue(data["finished"])
         names = [s["name"] for s in data["stages"]]

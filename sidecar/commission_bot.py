@@ -52,7 +52,7 @@ log = logging.getLogger("commission_bot")
 SIDE = Path(__file__).resolve().parent
 
 DEFAULTS: dict = {
-    "serial": "192.168.240.112:5555",
+    "serial": "192.0.2.10:5555",
     "adb": None,                # null = auto-detect (env ADB, SDK path, PATH)
     "assets": str(SIDE / "assets"),
     "max_steps": 60,

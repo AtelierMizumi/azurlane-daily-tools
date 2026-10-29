@@ -22,7 +22,7 @@
 2026-10-29 20:42:19.562 | ERROR | MaaTouchNotInstalledError: Received empty data from MaaTouch, probably because       
 MaaTouch is not installed                                                                                              
 2026-10-29 20:42:19.573 | INFO | <<< MAATOUCH INSTALL >>>                                                              
-2026-10-29 20:42:19.582 | INFO | Execute: ['/usr/bin/adb', '-s', '192.168.240.112:5555', 'push',                       
+2026-10-29 20:42:19.582 | INFO | Execute: ['/usr/bin/adb', '-s', '192.0.2.10:5555', 'push',                       
 './bin/MaaTouch/maatouchsync', '/data/local/tmp/maatouchsync']                                                         
 2026-10-29 20:42:19.635 | INFO | <<< MAATOUCH INIT >>>                                                                 
 2026-10-29 20:42:19.697 | INFO | [Device Orientation] 0 (Normal)                                                       

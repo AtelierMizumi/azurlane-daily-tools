@@ -14,7 +14,7 @@
 
 - Profile lần này chỉ là `waydroid`. Profile `phone` phải báo lỗi "not supported yet" (spec mục 2, quyết định 1 = chưa).
 - Độ phân giải Waydroid: `1280x720`, lấy từ config, không hardcode ngoài giá trị mặc định.
-- Serial mặc định `192.168.240.112:5555`, lấy từ config. Không được còn literal serial ở code mới.
+- Serial mặc định `192.0.2.10:5555`, lấy từ config. Không được còn literal serial ở code mới.
 - Không sửa code upstream trong `AzurLaneAutoScript/`, trừ file config instance `config/alas.json` khi chạy `--apply` (có backup).
 - Thư mục `azurlane-daily-tools` không phải git repo. Các bước "Commit" trong skill được thay bằng checkpoint: toàn bộ test phải xanh trước khi sang task kế tiếp. Không commit nếu bạn chưa yêu cầu.
 - Preflight dùng `docker exec alas adb ...`, không dùng host adb, để không tranh port 5037 với ALAS.
@@ -56,7 +56,7 @@ from daily_config import load_daily_config
 GOOD = """
 device:
   profile: waydroid
-  serial: 192.168.240.112:5555
+  serial: 192.0.2.10:5555
   resolution: 1280x720
 alas:
   container_name: alas
@@ -303,7 +303,7 @@ import unittest
 from daily_config import DeviceCfg
 from preflight import check_waydroid
 
-DEV = DeviceCfg(profile="waydroid", serial="192.168.240.112:5555", resolution=(1280, 720))
+DEV = DeviceCfg(profile="waydroid", serial="192.0.2.10:5555", resolution=(1280, 720))
 
 class FakeRunner:
     def __init__(self, answers):
@@ -388,7 +388,7 @@ from test_preflight import FakeRunner, OK
 
 def make_cfg():
     return DailyConfig(
-        device=DeviceCfg("waydroid", "192.168.240.112:5555", (1280, 720)),
+        device=DeviceCfg("waydroid", "192.0.2.10:5555", (1280, 720)),
         alas_container="alas", alas_webui_url="http://x",
         alas_repo_dir=Path("."), run_minutes=1, ntfy_url=None)
 
@@ -521,7 +521,7 @@ Thêm vào `test_daily_config.py`:
 
 ```python
 def test_serial_is_read_not_hardcoded(self):
-    cfg = self._load(GOOD.replace("192.168.240.112:5555", "10.0.0.9:5555"))
+    cfg = self._load(GOOD.replace("192.0.2.10:5555", "10.0.0.9:5555"))
     self.assertEqual(cfg.device.serial, "10.0.0.9:5555")
 ```
 
@@ -532,11 +532,11 @@ Expected: test mới PASS vì Task 1 đã đọc serial từ config. Bước nà
 
 - [ ] **Step 3: Update the two call sites**
 
-Trong `watchdog.py`, thay `"192.168.240.112:5555"` bằng `load_daily_config(cfg_dir / "daily.yaml").device.serial` nếu file tồn tại. Trong `commission_bot.py`, thêm vào `DEFAULTS` một bước đọc tương tự, giữ literal làm fallback khi không có `daily.yaml`.
+Trong `watchdog.py`, thay `"192.0.2.10:5555"` bằng `load_daily_config(cfg_dir / "daily.yaml").device.serial` nếu file tồn tại. Trong `commission_bot.py`, thêm vào `DEFAULTS` một bước đọc tương tự, giữ literal làm fallback khi không có `daily.yaml`.
 
 - [ ] **Step 4: Verify no literal serial remains in the new path**
 
-Run: `cd sidecar && rg -n "192.168.240.112" --glob '!runs/**' --glob '!.venv/**' --glob '!docs/**' .`
+Run: `cd sidecar && rg -n "192.0.2.10" --glob '!runs/**' --glob '!.venv/**' --glob '!docs/**' .`
 Expected: chỉ còn literal fallback trong `commission_bot.py` và file `daily.example.yaml`.
 
 ---

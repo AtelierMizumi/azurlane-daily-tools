@@ -30,7 +30,7 @@ Vì vậy điện thoại chỉ chạy được nếu có một trong các cách
 - (b) Chờ đến khi có chiến lược scaling. Ngoài phạm vi lần này.
 
 **Yêu cầu bắt buộc cho mọi thiết bị:**
-- Không hardcode serial. Serial lấy từ config. Hiện `192.168.240.112:5555` đang nằm trong `watchdog.py:177` và `commission_bot.py` DEFAULTS, phải chuyển vào config dùng chung.
+- Không hardcode serial. Serial lấy từ config. Hiện `192.0.2.10:5555` đang nằm trong `watchdog.py:177` và `commission_bot.py` DEFAULTS, phải chuyển vào config dùng chung.
 - Nhánh xử lý theo loại thiết bị. Logic riêng của Waydroid không được áp dụng cho điện thoại.
 
 ## 3. Kiến trúc
