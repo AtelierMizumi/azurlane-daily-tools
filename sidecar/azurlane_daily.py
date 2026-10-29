@@ -10,14 +10,18 @@ sleep) so the whole flow can be tested without sleeping.
 """
 from __future__ import annotations
 
+import argparse
+import sys
+import time
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
 from alas_config import apply_alas_config, check_alas_config, load_alas_config
-from daily_config import DailyConfig
+from daily_config import DailyConfig, load_daily_config
 from log_parser import RunState, parse_lines
-from preflight import Runner, check_waydroid
+from preflight import Runner, SubprocessRunner, check_waydroid
 
 WEBUI_WAIT_SECONDS = 120
 WEBUI_POLL_SECONDS = 5
@@ -224,3 +228,97 @@ def run_daily(
                                out.strip() or ("ok" if rc == 0 else f"rc={rc}")))
             except Exception as e:
                 stages.append(("docker stop", False, f"{type(e).__name__}: {e}"))
+
+
+# --------------------------------------------------------------------------
+# CLI
+# --------------------------------------------------------------------------
+
+STOP_WARNING = "WARNING: ALAS container may still be running; stop it manually"
+
+
+def format_e2e_report(stages: list[Stage]) -> str:
+    """One line per stage: `PASS|FAIL  <name>  <detail>`."""
+    return "\n".join(
+        f"{'PASS' if ok else 'FAIL'}  {name}  {detail}" for name, ok, detail in stages
+    )
+
+
+def _stop_failed(stages: list[Stage]) -> bool:
+    return any(name == "docker stop" and not ok for name, ok, _ in stages)
+
+
+def exit_code_for(out: dict) -> int:
+    """0 only when the run succeeded AND the container was stopped cleanly."""
+    if out["result"] == "success" and not _stop_failed(out["stages"]):
+        return 0
+    return 1
+
+
+def parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Run the ALAS Commission task once.")
+    p.add_argument("--config", default="daily.yaml", help="daily config file (default: daily.yaml)")
+    p.add_argument("--check", action="store_true",
+                   help="only run preflight and the ALAS config check; do not start the container")
+    p.add_argument("--apply", action="store_true",
+                   help="let the run fix the ALAS config (a backup is written first)")
+    p.add_argument("--e2e", action="store_true",
+                   help="full run with the per-stage report (same as the default mode)")
+    return p.parse_args(argv)
+
+
+def _http_status(url: str) -> int:
+    try:
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            return resp.status
+    except OSError:  # URLError, HTTPError, timeouts, connection refused
+        return 0
+
+
+def _real_deps() -> tuple[Runner, Callable[[str], int], Callable[[], float], Callable[[float], None]]:
+    """The real runner/http/clock/sleep. Tests replace this function."""
+    return SubprocessRunner(), _http_status, time.monotonic, time.sleep
+
+
+def run_check(cfg: DailyConfig, runner: Runner, alas_config_path: Path) -> list[Stage]:
+    """Preflight + ALAS config check only. Never starts or stops anything."""
+    stages: list[Stage] = []
+    problems = check_waydroid(runner, cfg.alas_container, cfg.device)
+    stages.append(("preflight", not problems, "; ".join(problems) or "ok"))
+    try:
+        problems = check_alas_config(load_alas_config(alas_config_path))
+        stages.append(("config", not problems, "; ".join(problems) or "ok"))
+    except (OSError, ValueError) as e:
+        stages.append(("config", False, str(e)))
+    return stages
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    try:
+        cfg = load_daily_config(Path(args.config))
+    except (OSError, ValueError) as e:
+        print(f"FAIL  daily config  {e}", file=sys.stderr)
+        return 1
+    runner, http_get, clock, sleep = _real_deps()
+    alas_config_path = Path(cfg.alas_repo_dir) / "config" / "alas.json"
+    log_dir = Path(cfg.alas_repo_dir) / "log"
+
+    if args.check:
+        stages = run_check(cfg, runner, alas_config_path)
+        print(format_e2e_report(stages))
+        return 0 if all(ok for _, ok, _ in stages) else 1
+
+    out = run_daily(
+        cfg, runner, http_get, clock, sleep,
+        alas_config_path=alas_config_path, log_dir=log_dir, apply=args.apply,
+    )
+    print(format_e2e_report(out["stages"]))
+    print(f"RESULT: {out['result']}")
+    if _stop_failed(out["stages"]):
+        print(STOP_WARNING, file=sys.stderr)
+    return exit_code_for(out)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

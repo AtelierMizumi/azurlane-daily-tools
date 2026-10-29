@@ -284,5 +284,151 @@ class Orchestrator(unittest.TestCase):
         self.assertEqual(out["result"], "timeout")
 
 
+class Cli(unittest.TestCase):
+    def test_report_lines(self):
+        from azurlane_daily import format_e2e_report
+        text = format_e2e_report([("preflight", True, "ok"), ("alas", False, "timeout")])
+        lines = text.splitlines()
+        self.assertTrue(lines[0].startswith("PASS"))
+        self.assertTrue(lines[1].startswith("FAIL"))
+        self.assertIn("timeout", lines[1])
+
+    def test_report_one_line_per_stage_with_name_and_detail(self):
+        from azurlane_daily import format_e2e_report
+        text = format_e2e_report([("a", True, "x"), ("b", True, "y"), ("c", False, "z")])
+        lines = text.splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertIn("b", lines[1])
+        self.assertIn("y", lines[1])
+
+    def test_failed_docker_stop_shows_fail_with_detail(self):  # Ruling 18
+        from azurlane_daily import format_e2e_report
+        text = format_e2e_report([("commission", True, "done"),
+                                  ("docker stop", False, "rc=1 no such container")])
+        last = text.splitlines()[-1]
+        self.assertTrue(last.startswith("FAIL"))
+        self.assertIn("docker stop", last)
+        self.assertIn("no such container", last)
+
+    def test_exit_code_truth_table(self):  # Ruling 22
+        from azurlane_daily import exit_code_for
+        ok = [("docker stop", True, "ok")]
+        bad_stop = [("docker stop", False, "rc=1")]
+        self.assertEqual(exit_code_for({"result": "success", "stages": ok}), 0)
+        self.assertEqual(exit_code_for({"result": "success", "stages": []}), 0)
+        self.assertEqual(exit_code_for({"result": "success", "stages": bad_stop}), 1)
+        for r in ("preflight_failed", "already_running", "config_failed",
+                  "webui_timeout", "alas_error", "timeout"):
+            self.assertEqual(exit_code_for({"result": r, "stages": ok}), 1, r)
+
+    def test_parse_args_defaults(self):
+        from azurlane_daily import parse_args
+        ns = parse_args([])
+        self.assertEqual(ns.config, "daily.yaml")
+        self.assertFalse(ns.check)
+        self.assertFalse(ns.apply)
+        self.assertFalse(ns.e2e)
+
+    def test_parse_args_flags(self):
+        from azurlane_daily import parse_args
+        ns = parse_args(["--config", "my.yaml", "--check", "--apply", "--e2e"])
+        self.assertEqual(ns.config, "my.yaml")
+        self.assertTrue(ns.check and ns.apply and ns.e2e)
+
+    def _run_main(self, argv, out, runner=None):
+        """Call main with all real wiring replaced; return (code, stdout, stderr, run_daily mock)."""
+        import io, azurlane_daily as ad
+        from contextlib import redirect_stdout, redirect_stderr
+        d = tempfile.mkdtemp()
+        cfg = make_cfg()
+        cfg = DailyConfig(cfg.device, cfg.alas_container, cfg.alas_webui_url,
+                          Path(d), cfg.run_minutes, cfg.ntfy_url)
+        (Path(d) / "config").mkdir()
+        alas_json(Path(d) / "config", GOOD_ALAS).rename(Path(d) / "config" / "alas.json")
+        deps = (runner or FakeRunner(OK), lambda u: 200, Clock(), lambda s: None)
+        so, se = io.StringIO(), io.StringIO()
+        with mock.patch.object(ad, "load_daily_config", return_value=cfg), \
+             mock.patch.object(ad, "_real_deps", return_value=deps), \
+             mock.patch.object(ad, "run_daily", return_value=out) as rd, \
+             redirect_stdout(so), redirect_stderr(se):
+            code = ad.main(argv)
+        return code, so.getvalue(), se.getvalue(), rd, Path(d)
+
+    def test_main_default_runs_full_and_prints_report(self):  # Ruling 21
+        out = {"result": "success", "stages": [("preflight", True, "ok")],
+               "started": "s", "finished": "f"}
+        code, so, se, rd, d = self._run_main([], out)
+        self.assertEqual(code, 0)
+        rd.assert_called_once()
+        self.assertTrue(so.splitlines()[0].startswith("PASS"))
+        _, kwargs = rd.call_args
+        self.assertEqual(kwargs["alas_config_path"], d / "config" / "alas.json")  # Ruling 19
+        self.assertEqual(kwargs["log_dir"], d / "log")
+        self.assertFalse(kwargs["apply"])
+
+    def test_main_apply_flag_passed_through(self):
+        out = {"result": "success", "stages": [], "started": "s", "finished": "f"}
+        _, _, _, rd, _ = self._run_main(["--apply"], out)
+        self.assertTrue(rd.call_args.kwargs["apply"])
+
+    def test_main_failed_stop_exits_1_and_warns(self):  # Ruling 18
+        out = {"result": "success", "started": "s", "finished": "f",
+               "stages": [("commission", True, "done"), ("docker stop", False, "rc=1")]}
+        code, so, se, _, _ = self._run_main(["--e2e"], out)
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL", so)
+        self.assertIn("WARNING: ALAS container may still be running; stop it manually", se)
+
+    def test_main_no_warning_when_stop_ok(self):
+        out = {"result": "success", "started": "s", "finished": "f",
+               "stages": [("docker stop", True, "ok")]}
+        code, _, se, _, _ = self._run_main([], out)
+        self.assertEqual(code, 0)
+        self.assertNotIn("WARNING", se)
+
+    def test_main_failure_result_exits_1(self):
+        out = {"result": "timeout", "started": "s", "finished": "f",
+               "stages": [("commission", False, "late"), ("docker stop", True, "ok")]}
+        code, _, se, _, _ = self._run_main([], out)
+        self.assertEqual(code, 1)
+        self.assertNotIn("WARNING", se)
+
+    def test_check_does_not_call_run_daily_or_start_container(self):  # Ruling 20
+        runner = FakeRunner(OK)
+        code, so, _, rd, _ = self._run_main(["--check"], {}, runner=runner)
+        self.assertEqual(code, 0)
+        rd.assert_not_called()
+        self.assertFalse(any(c[:2] in (["docker", "start"], ["docker", "stop"]) for c in runner.calls))
+        lines = so.splitlines()
+        self.assertTrue(len(lines) >= 2)
+        self.assertTrue(all(l.startswith("PASS") for l in lines))
+
+    def test_check_fails_when_waydroid_stopped(self):  # Ruling 20
+        runner = FakeRunner({**OK, "waydroid status": (0, "Session:\tSTOPPED")})
+        code, so, _, rd, _ = self._run_main(["--check"], {}, runner=runner)
+        self.assertEqual(code, 1)
+        rd.assert_not_called()
+        self.assertTrue(any(l.startswith("FAIL") for l in so.splitlines()))
+
+    def test_check_fails_on_bad_alas_config(self):  # Ruling 20
+        import azurlane_daily as ad
+        out_code = None
+        d = tempfile.mkdtemp()
+        cfg = make_cfg()
+        cfg = DailyConfig(cfg.device, cfg.alas_container, cfg.alas_webui_url,
+                          Path(d), cfg.run_minutes, cfg.ntfy_url)
+        (Path(d) / "config").mkdir()
+        (Path(d) / "config" / "alas.json").write_text(json.dumps(BAD_ALAS))
+        import io
+        from contextlib import redirect_stdout
+        so = io.StringIO()
+        with mock.patch.object(ad, "load_daily_config", return_value=cfg), \
+             mock.patch.object(ad, "_real_deps", return_value=(FakeRunner(OK), lambda u: 200, Clock(), lambda s: None)), \
+             redirect_stdout(so):
+            out_code = ad.main(["--check"])
+        self.assertEqual(out_code, 1)
+        self.assertTrue(any(l.startswith("FAIL") for l in so.getvalue().splitlines()))
+
+
 if __name__ == "__main__":
     unittest.main()
